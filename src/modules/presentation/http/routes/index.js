@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { createCustomersRouter } from './customers.routes.js';
 
-export function createHttpRoutes({ customerController }) {
+export function createHttpRoutes({ customerController, productController }) {
   const router = Router();
 
   router.get('/', (req, res) => {
@@ -9,6 +9,7 @@ export function createHttpRoutes({ customerController }) {
   });
 
   router.use('/customers', createCustomersRouter(customerController));
+  router.use('/products', createProductsRouter(productController));
 
   return router;
 }
