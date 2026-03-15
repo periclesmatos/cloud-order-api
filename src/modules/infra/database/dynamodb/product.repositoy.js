@@ -49,4 +49,22 @@ export class ProductDynamoDBRepository {
 
     return (result.Items ?? []).map(ProductDynamoDBMapper.toDomainProduct);
   }
+
+  async findAll() {
+    const result = await dynamodb.send(
+      new QueryCommand({
+        TableName: TABLE_NAME,
+        IndexName: 'type-index',
+        KeyConditionExpression: '#type = :type',
+        ExpressionAttributeNames: {
+          '#type': 'type',
+        },
+        ExpressionAttributeValues: {
+          ':type': 'PRODUCT',
+        },
+      }),
+    );
+
+    return (result.Items ?? []).map(ProductDynamoDBMapper.toDomainProduct);
+  }
 }
