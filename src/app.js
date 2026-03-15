@@ -1,34 +1,27 @@
 import 'dotenv/config';
-import express from 'express';
-import swaggerUi from 'swagger-ui-express';
+import chalk from 'chalk';
 
-import { UuidGenerator } from './modules/shared/providers/uuid-generator.js';
-import { CustomerDynamoDBRepository } from './modules/infra/database/dynamodb/customer.repository.js';
-import { ProductDynamoDBRepository } from './modules/infra/database/dynamodb/product.repositoy.js';
-import { CustomerService } from './modules/application/service/customer.service.js';
-import { CustomerController } from './modules/presentation/http/controllers/customer.controller.js';
-import { createHttpRoutes } from './modules/presentation/http/routes/index.js';
-import { swaggerSpec } from './modules/presentation/http/docs/swagger.js';
+import { createApp } from './app.factory.js';
 import { logger } from './modules/shared/logger/console-logger.js';
 
-const app = express();
-app.use(express.json());
+const app = createApp();
 
-// Providers
-const uuidGenerator       = new UuidGenerator();
-// Customers
-const customerRepository  = new CustomerDynamoDBRepository();
-const customerService     = new CustomerService(customerRepository, uuidGenerator);
-const customerController  = new CustomerController(customerService);
-// Products
-const productRepository   = new ProductDynamoDBRepository();
-const productService      = new ProductService(productRepository, uuidGenerator);
-const productController   = new ProductController(productService);
-// Routes
-app.use(createHttpRoutes({ customerController, productController }));
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-// Start server
+const startupBanner = `
+   _____ _                 _    ____          _           
+  / ____| |               | |  / __ \\        | |          
+ | |    | | ___  _   _  __| | | |  | |_ __ __| | ___ _ __ 
+ | |    | |/ _ \\| | | |/ _\` | | |  | | '__/ _\` |/ _ \\ '__|
+ | |____| | (_) | |_| | (_| | | |__| | | | (_| |  __/ |   
+  \\_____|_|\\___/ \\__,_|\\__,_|  \\____/|_|  \\__,_|\\___|_|   
+
+                    Cloud Order API
+`;
+
 const port = process.env.PORT || 3000;
-app.listen(port, () => logger.info('App', `API rodando em http://localhost:${port}`));
+app.listen(port, () => {
+  logger.info('App', `\n${chalk.green(startupBanner)}`);
+  logger.info('App', `${chalk.green("🚀 Server started")}`);
+  logger.info('App', `API rodando em http://localhost:${port}`);
+});
 
 export default app;

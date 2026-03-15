@@ -1,4 +1,5 @@
 import { Address } from '../../domain/entities/address.js';
+import { NotFoundError } from '../errors/not-found.error.js';
 import { Customer } from '../../domain/entities/customer.js';
 import { ValidationError } from '../../domain/errors/validation.error.js';
 import { Phone } from '../../domain/value-object/phone.js';
@@ -36,7 +37,7 @@ export class CustomerService {
   async updateCustomer(customer_id, update_data) {
     const customer = await this.customerRepository.findById(customer_id);
     if (!customer) {
-      throw new ValidationError('Cliente não encontrado');
+      throw new NotFoundError('Cliente não encontrado');
     }
     const previousPhone = customer.phone.toString();
     const { name, email, phone } = update_data;
@@ -61,7 +62,7 @@ export class CustomerService {
   async deleteCustomer(customer_id) {
     const customer = await this.customerRepository.findById(customer_id);
     if (!customer) {
-      throw new ValidationError('Cliente não encontrado');
+      throw new NotFoundError('Cliente não encontrado');
     }
     await this.customerRepository.deleteCustomerCascade(customer_id);
   }
@@ -74,7 +75,7 @@ export class CustomerService {
   async createAddress(customer_id, address_data) {
     const customer = await this.customerRepository.findById(customer_id);
     if (!customer) {
-      throw new ValidationError('Cliente não encontrado');
+      throw new NotFoundError('Cliente não encontrado');
     }
 
     const addressId = this.uuidGenerator.generate();
@@ -90,12 +91,12 @@ export class CustomerService {
   async updateAddress(customer_id, address_id, update_data) {
     const customer = await this.customerRepository.findById(customer_id);
     if (!customer) {
-      throw new ValidationError('Cliente não encontrado');
+      throw new NotFoundError('Cliente não encontrado');
     }
 
     const existingAddress = await this.customerRepository.findAddressById(customer_id, address_id);
     if (!existingAddress) {
-      throw new ValidationError('Endereço não encontrado');
+      throw new NotFoundError('Endereço não encontrado');
     }
 
     const updatedAddress = Address.create({
@@ -117,12 +118,12 @@ export class CustomerService {
   async deleteAddress(customer_id, address_id) {
     const customer = await this.customerRepository.findById(customer_id);
     if (!customer) {
-      throw new ValidationError('Cliente não encontrado');
+      throw new NotFoundError('Cliente não encontrado');
     }
 
     const existingAddress = await this.customerRepository.findAddressById(customer_id, address_id);
     if (!existingAddress) {
-      throw new ValidationError('Endereço não encontrado');
+      throw new NotFoundError('Endereço não encontrado');
     }
 
     await this.customerRepository.deleteAddress(customer_id, address_id);

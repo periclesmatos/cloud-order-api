@@ -2,13 +2,15 @@ import express from 'express';
 import request from 'supertest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CustomerController } from '../../../src/modules/presentation/http/controllers/customer.controller.js';
-import { createHttpRoutes } from '../../../src/modules/presentation/http/routes/index.js';
+import { httpErrorHandler } from '../../../src/modules/presentation/http/middlewares/error-handler.js';
+import { createCustomersRouter } from '../../../src/modules/presentation/http/routes/customers.routes.js';
 
 function criarAplicacao(serviceMock) {
   const app = express();
   app.use(express.json());
   const customerController = new CustomerController(serviceMock);
-  app.use(createHttpRoutes({ customerController }));
+  app.use('/customers', createCustomersRouter(customerController));
+  app.use(httpErrorHandler);
   return app;
 }
 
