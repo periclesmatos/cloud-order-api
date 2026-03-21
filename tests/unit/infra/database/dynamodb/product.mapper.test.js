@@ -3,6 +3,11 @@ import { Product } from '../../../../../src/modules/domain/entities/product.js';
 import { ProductDynamoDBMapper } from '../../../../../src/modules/infra/database/dynamodb/mappers/product.mapper.js';
 
 describe('ProductDynamoDBMapper (unit)', () => {
+  it('deve normalizar nome removendo aspas ao redor (fluxo feliz)', () => {
+    const normalized = ProductDynamoDBMapper.normalizeName('"PlayStation 5"');
+    expect(normalized).toBe('playstation 5');
+  });
+
   it('deve mapear produto para item do DynamoDB com nome normalizado e preco em centavos (fluxo feliz)', () => {
     const product = Product.create({
       id: 'prod-1',

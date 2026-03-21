@@ -32,6 +32,8 @@ export function createDependencies() {
 export function createApp(dependencies = createDependencies()) {
   const app = express();
   app.use(express.json());
+  app.use('/', swaggerUi.serve);
+  app.get('/', swaggerUi.setup(swaggerSpec));
   app.use(createHttpRoutes(dependencies));
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
   app.use(httpErrorHandler);

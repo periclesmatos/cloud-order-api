@@ -2,7 +2,7 @@ import { Product } from '../../../../domain/entities/product.js';
 
 export class ProductDynamoDBMapper {
   static normalizeName(name) {
-    return String(name).trim().toLowerCase();
+    return String(name).trim().replace(/^['"]+|['"]+$/g, '').trim().toLowerCase();
   }
 
   static toProductItem(product) {

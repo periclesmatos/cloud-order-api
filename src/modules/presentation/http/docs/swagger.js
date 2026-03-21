@@ -1,9 +1,9 @@
 export const swaggerSpec = {
   openapi: '3.0.3',
   info: {
-    title: 'Cloud Order - Customer API',
+    title: 'Cloud Order API',
     version: '1.0.0',
-    description: 'Documentacao dos endpoints de clientes e enderecos.',
+    description: 'Documentacao dos endpoints de clientes, enderecos e produtos.',
   },
   servers: [
     {
@@ -15,6 +15,7 @@ export const swaggerSpec = {
     { name: 'Health', description: 'Status da API' },
     { name: 'Customers', description: 'Operacoes de cliente' },
     { name: 'Addresses', description: 'Operacoes de endereco' },
+    { name: 'Products', description: 'Operacoes de produto' },
   ],
   components: {
     schemas: {
@@ -86,6 +87,41 @@ export const swaggerSpec = {
           reference: { type: 'string', nullable: true, example: 'Proximo a praca' },
         },
       },
+      Product: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', example: 'prod-1' },
+          name: { type: 'string', example: 'Teclado Mecanico' },
+          price: { type: 'number', example: 299.9 },
+          amount: { type: 'number', example: 10 },
+          isActive: { type: 'boolean', example: true },
+          createdAt: { type: 'string', format: 'date-time' },
+        },
+      },
+      CreateProductInput: {
+        type: 'object',
+        required: ['name', 'price', 'amount'],
+        properties: {
+          name: { type: 'string', example: 'Teclado Mecanico' },
+          price: { type: 'number', example: 299.9 },
+          amount: { type: 'number', example: 10 },
+        },
+      },
+      UpdateProductInput: {
+        type: 'object',
+        properties: {
+          name: { type: 'string', example: 'Teclado Mecanico Pro' },
+          price: { type: 'number', example: 349.9 },
+          amount: { type: 'number', example: 8 },
+        },
+      },
+      ProductStatusInput: {
+        type: 'object',
+        required: ['isActive'],
+        properties: {
+          isActive: { type: 'boolean', example: true },
+        },
+      },
     },
     parameters: {
       customerId: {
@@ -109,10 +145,17 @@ export const swaggerSpec = {
         schema: { type: 'string' },
         description: 'Telefone do cliente',
       },
+      productId: {
+        name: 'id',
+        in: 'path',
+        required: true,
+        schema: { type: 'string' },
+        description: 'ID do produto',
+      },
     },
   },
   paths: {
-    '/': {
+    '/health': {
       get: {
         tags: ['Health'],
         summary: 'Verifica status da API',
@@ -352,6 +395,192 @@ export const swaggerSpec = {
           204: { description: 'Endereco removido' },
           404: {
             description: 'Cliente ou endereco nao encontrado',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/products': {
+      post: {
+        tags: ['Products'],
+        summary: 'Cria um produto',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/CreateProductInput' },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: 'Produto criado com sucesso',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Product' },
+              },
+            },
+          },
+          400: {
+            description: 'Erro de validacao',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+      get: {
+        tags: ['Products'],
+        summary: 'Lista produtos ou busca por nome',
+        parameters: [
+          {
+            name: 'name',
+            in: 'query',
+            required: false,
+            schema: { type: 'string' },
+            description: 'Nome do produto para filtro parcial',
+          },
+          {
+            name: 'isActive',
+            in: 'query',
+            required: false,
+            schema: { type: 'boolean' },
+            description: 'Filtra produtos por status ativo (true) ou inativo (false)',
+          },
+        ],
+        responses: {
+          200: {
+            description: 'Lista de produtos',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'array',
+                  items: { $ref: '#/components/schemas/Product' },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/products/{id}': {
+      get: {
+        tags: ['Products'],
+        summary: 'Busca produto por ID',
+        parameters: [{ $ref: '#/components/parameters/productId' }],
+        responses: {
+          200: {
+            description: 'Produto encontrado',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Product' },
+              },
+            },
+          },
+          404: {
+            description: 'Produto nao encontrado',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+      put: {
+        tags: ['Products'],
+        summary: 'Atualiza produto',
+        parameters: [{ $ref: '#/components/parameters/productId' }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/UpdateProductInput' },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Produto atualizado',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Product' },
+              },
+            },
+          },
+          400: {
+            description: 'Erro de validacao',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+          404: {
+            description: 'Produto nao encontrado',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+      delete: {
+        tags: ['Products'],
+        summary: 'Remove produto',
+        parameters: [{ $ref: '#/components/parameters/productId' }],
+        responses: {
+          204: { description: 'Produto removido' },
+          404: {
+            description: 'Produto nao encontrado',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/products/{id}/status': {
+      patch: {
+        tags: ['Products'],
+        summary: 'Atualiza status do produto',
+        parameters: [{ $ref: '#/components/parameters/productId' }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ProductStatusInput' },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Status do produto atualizado',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Product' },
+              },
+            },
+          },
+          404: {
+            description: 'Produto nao encontrado',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+          400: {
+            description: 'Erro de validacao',
             content: {
               'application/json': {
                 schema: { $ref: '#/components/schemas/Error' },

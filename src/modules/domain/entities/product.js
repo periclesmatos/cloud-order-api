@@ -32,7 +32,7 @@ export class Product {
   }
 
   changeAmount(newAmount) {
-    if (newAmount < 0) throw new ValidationError('Quantidade não pode ser negativa');
+    if (newAmount <= 0) throw new ValidationError('Quantidade não pode ser negativa');
     this.amount = newAmount;
     this.updatedAt = new Date().toISOString();
   }
