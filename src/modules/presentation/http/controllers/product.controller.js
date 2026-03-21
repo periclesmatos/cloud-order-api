@@ -9,7 +9,6 @@ function parseIsActiveQuery(value) {
   if (value === 'false') return false;
   throw new ValidationError('isActive deve ser true ou false');
 }
-
 export class ProductController {
   constructor(productService) {
     this.productService = productService;
