@@ -5,6 +5,7 @@ import { NotFoundError } from '../../../src/modules/application/errors/not-found
 import { ProductController } from '../../../src/modules/presentation/http/controllers/product.controller.js';
 import { httpErrorHandler } from '../../../src/modules/presentation/http/middlewares/error-handler.js';
 import { createProductsRouter } from '../../../src/modules/presentation/http/routes/product.routes.js';
+import { TokenService } from '../../../src/modules/shared/providers/token-service.js';
 
 function createApplication(serviceMock) {
   const app = express();
@@ -18,6 +19,7 @@ function createApplication(serviceMock) {
 describe('Integracao HTTP - Produtos', () => {
   let serviceMock;
   let app;
+  let userToken;
 
   beforeEach(() => {
     serviceMock = {
@@ -30,6 +32,8 @@ describe('Integracao HTTP - Produtos', () => {
       setProductStatus: vi.fn(),
     };
     app = createApplication(serviceMock);
+    const tokenService = new TokenService();
+    userToken = tokenService.sign({ sub: 'user-1', type: 'USER', role: 'ADMIN' });
   });
 
   it('deve atualizar produto e retornar 200 (fluxo feliz)', async () => {
@@ -42,11 +46,14 @@ describe('Integracao HTTP - Produtos', () => {
       createdAt: '2026-03-01T00:00:00.000Z',
     });
 
-    const response = await request(app).put('/products/prod-1').send({
-      name: 'Mouse Gamer',
-      price: 120,
-      amount: 8,
-    });
+    const response = await request(app)
+      .put('/products/prod-1')
+      .set('Authorization', `Bearer ${userToken}`)
+      .send({
+        name: 'Mouse Gamer',
+        price: 120,
+        amount: 8,
+      });
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
@@ -62,7 +69,7 @@ describe('Integracao HTTP - Produtos', () => {
   it('deve remover produto e retornar 204 (fluxo feliz)', async () => {
     serviceMock.deleteProduct.mockResolvedValue(undefined);
 
-    const response = await request(app).delete('/products/prod-1');
+    const response = await request(app).delete('/products/prod-1').set('Authorization', `Bearer ${userToken}`);
 
     expect(response.status).toBe(204);
     expect(serviceMock.deleteProduct).toHaveBeenCalledWith('prod-1');
@@ -78,7 +85,10 @@ describe('Integracao HTTP - Produtos', () => {
       createdAt: '2026-03-01T00:00:00.000Z',
     });
 
-    const response = await request(app).patch('/products/prod-1/status').send({ isActive: true });
+    const response = await request(app)
+      .patch('/products/prod-1/status')
+      .set('Authorization', `Bearer ${userToken}`)
+      .send({ isActive: true });
 
     expect(response.status).toBe(200);
     expect(response.body.isActive).toBe(true);
@@ -95,7 +105,10 @@ describe('Integracao HTTP - Produtos', () => {
       createdAt: '2026-03-01T00:00:00.000Z',
     });
 
-    const response = await request(app).patch('/products/prod-1/status').send({ isActive: false });
+    const response = await request(app)
+      .patch('/products/prod-1/status')
+      .set('Authorization', `Bearer ${userToken}`)
+      .send({ isActive: false });
 
     expect(response.status).toBe(200);
     expect(response.body.isActive).toBe(false);
@@ -105,7 +118,10 @@ describe('Integracao HTTP - Produtos', () => {
   it('deve retornar 404 ao atualizar status de produto inexistente (caso de erro)', async () => {
     serviceMock.setProductStatus.mockRejectedValue(new NotFoundError('Produto não encontrado'));
 
-    const response = await request(app).patch('/products/prod-x/status').send({ isActive: true });
+    const response = await request(app)
+      .patch('/products/prod-x/status')
+      .set('Authorization', `Bearer ${userToken}`)
+      .send({ isActive: true });
 
     expect(response.status).toBe(404);
     expect(response.body.error).toBe('Produto não encontrado');
@@ -155,5 +171,12 @@ describe('Integracao HTTP - Produtos', () => {
 
     expect(response.status).toBe(400);
     expect(response.body.error).toBe('isActive deve ser true ou false');
+  });
+
+  it('deve retornar 401 ao tentar atualizar produto sem token (caso de erro)', async () => {
+    const response = await request(app).put('/products/prod-1').send({ name: 'Novo' });
+
+    expect(response.status).toBe(401);
+    expect(response.body.error).toBe('Token não informado');
   });
 });

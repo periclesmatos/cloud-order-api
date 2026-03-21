@@ -1,10 +1,20 @@
 import { NotFoundError } from '../../../application/errors/not-found.error.js';
+import { UnauthorizedError } from '../../../application/errors/unauthorized.error.js';
+import { ForbiddenError } from '../../../application/errors/forbidden.error.js';
 import { ValidationError } from '../../../domain/errors/validation.error.js';
 import { logger } from '../../../shared/logger/console-logger.js';
 
 function getStatusCode(error) {
   if (error instanceof NotFoundError) {
     return 404;
+  }
+
+  if (error instanceof UnauthorizedError) {
+    return 401;
+  }
+
+  if (error instanceof ForbiddenError) {
+    return 403;
   }
 
   if (error instanceof ValidationError) {

@@ -6,6 +6,7 @@ import { ValidationError } from '../../../src/modules/domain/errors/validation.e
 import { OrderController } from '../../../src/modules/presentation/http/controllers/order.controller.js';
 import { httpErrorHandler } from '../../../src/modules/presentation/http/middlewares/error-handler.js';
 import { createOrdersRouter } from '../../../src/modules/presentation/http/routes/orders.routes.js';
+import { TokenService } from '../../../src/modules/shared/providers/token-service.js';
 
 function createApplication(serviceMock) {
   const app = express();
@@ -19,6 +20,8 @@ function createApplication(serviceMock) {
 describe('Integracao HTTP - Pedidos', () => {
   let serviceMock;
   let app;
+  let userToken;
+  let customerToken;
 
   beforeEach(() => {
     serviceMock = {
@@ -29,6 +32,9 @@ describe('Integracao HTTP - Pedidos', () => {
       updateOrderStatus: vi.fn(),
     };
     app = createApplication(serviceMock);
+    const tokenService = new TokenService();
+    userToken = tokenService.sign({ sub: 'user-1', type: 'USER', role: 'ADMIN' });
+    customerToken = tokenService.sign({ sub: 'cust-1', type: 'CUSTOMER' });
   });
 
   it('deve criar pedido e retornar 201 (fluxo feliz)', async () => {
@@ -61,11 +67,14 @@ describe('Integracao HTTP - Pedidos', () => {
       getTotalItems: () => 2,
     });
 
-    const response = await request(app).post('/orders').send({
-      customerId: 'cust-1',
-      addressId: 'addr-1',
-      items: [{ productId: 'prod-1', quantity: 2 }],
-    });
+    const response = await request(app)
+      .post('/orders')
+      .set('Authorization', `Bearer ${customerToken}`)
+      .send({
+        customerId: 'cust-1',
+        addressId: 'addr-1',
+        items: [{ productId: 'prod-1', quantity: 2 }],
+      });
 
     expect(response.status).toBe(201);
     expect(response.body.id).toBe('ord-1');
@@ -91,7 +100,9 @@ describe('Integracao HTTP - Pedidos', () => {
       },
     ]);
 
-    const response = await request(app).get('/orders?customerId=cust-1');
+    const response = await request(app)
+      .get('/orders?customerId=cust-1')
+      .set('Authorization', `Bearer ${userToken}`);
 
     expect(response.status).toBe(200);
     expect(serviceMock.listOrders).toHaveBeenCalledWith({
@@ -134,7 +145,9 @@ describe('Integracao HTTP - Pedidos', () => {
       },
     ]);
 
-    const response = await request(app).get('/orders/customer/cust-9');
+    const response = await request(app)
+      .get('/orders/customer/cust-9')
+      .set('Authorization', `Bearer ${userToken}`);
 
     expect(response.status).toBe(200);
     expect(response.body[0].items).toHaveLength(1);
@@ -148,7 +161,9 @@ describe('Integracao HTTP - Pedidos', () => {
   it('deve enviar filtros de status e data na listagem geral (fluxo feliz)', async () => {
     serviceMock.listOrders.mockResolvedValue([]);
 
-    const response = await request(app).get('/orders?status=CREATED&dateFrom=2026-03-01&dateTo=2026-03-31');
+    const response = await request(app)
+      .get('/orders?status=CREATED&dateFrom=2026-03-01&dateTo=2026-03-31')
+      .set('Authorization', `Bearer ${userToken}`);
 
     expect(response.status).toBe(200);
     expect(serviceMock.listOrders).toHaveBeenCalledWith({
@@ -162,7 +177,9 @@ describe('Integracao HTTP - Pedidos', () => {
   it('deve enviar filtros de status e data na rota por cliente (fluxo feliz)', async () => {
     serviceMock.listOrdersByCustomer.mockResolvedValue([]);
 
-    const response = await request(app).get('/orders/customer/cust-1?status=SENT&dateFrom=2026-03-01');
+    const response = await request(app)
+      .get('/orders/customer/cust-1?status=SENT&dateFrom=2026-03-01')
+      .set('Authorization', `Bearer ${userToken}`);
 
     expect(response.status).toBe(200);
     expect(serviceMock.listOrdersByCustomer).toHaveBeenCalledWith('cust-1', {
@@ -173,7 +190,7 @@ describe('Integracao HTTP - Pedidos', () => {
   });
 
   it('deve retornar 400 para status inválido no filtro (caso de erro)', async () => {
-    const response = await request(app).get('/orders?status=INVALID');
+    const response = await request(app).get('/orders?status=INVALID').set('Authorization', `Bearer ${userToken}`);
     expect(response.status).toBe(400);
     expect(response.body.error).toBe('status inválido');
   });
@@ -181,7 +198,7 @@ describe('Integracao HTTP - Pedidos', () => {
   it('deve retornar 404 para pedido inexistente (caso de erro)', async () => {
     serviceMock.getOrderById.mockRejectedValue(new NotFoundError('Pedido não encontrado'));
 
-    const response = await request(app).get('/orders/ord-x');
+    const response = await request(app).get('/orders/ord-x').set('Authorization', `Bearer ${customerToken}`);
 
     expect(response.status).toBe(404);
     expect(response.body.error).toBe('Pedido não encontrado');
@@ -217,7 +234,10 @@ describe('Integracao HTTP - Pedidos', () => {
       getTotalItems: () => 1,
     });
 
-    const response = await request(app).patch('/orders/ord-1/status').send({ status: 'SENT' });
+    const response = await request(app)
+      .patch('/orders/ord-1/status')
+      .set('Authorization', `Bearer ${userToken}`)
+      .send({ status: 'SENT' });
 
     expect(response.status).toBe(200);
     expect(response.body.status).toBe('SENT');
@@ -254,7 +274,10 @@ describe('Integracao HTTP - Pedidos', () => {
       getTotalItems: () => 1,
     });
 
-    const response = await request(app).patch('/orders/ord-1/status').send({ status: 'CANCELED' });
+    const response = await request(app)
+      .patch('/orders/ord-1/status')
+      .set('Authorization', `Bearer ${userToken}`)
+      .send({ status: 'CANCELED' });
 
     expect(response.status).toBe(200);
     expect(response.body.status).toBe('CANCELED');
@@ -266,9 +289,22 @@ describe('Integracao HTTP - Pedidos', () => {
       new ValidationError('Pedido enviado ou concluído não pode ser cancelado'),
     );
 
-    const response = await request(app).patch('/orders/ord-1/status').send({ status: 'CANCELED' });
+    const response = await request(app)
+      .patch('/orders/ord-1/status')
+      .set('Authorization', `Bearer ${userToken}`)
+      .send({ status: 'CANCELED' });
 
     expect(response.status).toBe(400);
     expect(response.body.error).toBe('Pedido enviado ou concluído não pode ser cancelado');
+  });
+
+  it('deve retornar 403 ao tentar atualizar status com token de cliente (caso de erro)', async () => {
+    const response = await request(app)
+      .patch('/orders/ord-1/status')
+      .set('Authorization', `Bearer ${customerToken}`)
+      .send({ status: 'SENT' });
+
+    expect(response.status).toBe(403);
+    expect(response.body.error).toBe('Apenas usuários administradores podem acessar este recurso');
   });
 });

@@ -12,12 +12,20 @@ export const swaggerSpec = {
     },
   ],
   tags: [
-    { name: 'Health', description: 'Status da API' },
+    { name: 'Auth', description: 'Autenticacao e registro' },
     { name: 'Customers', description: 'Operacoes de cliente' },
     { name: 'Addresses', description: 'Operacoes de endereco' },
     { name: 'Products', description: 'Operacoes de produto' },
+    { name: 'Orders', description: 'Operacoes de pedido' },
   ],
   components: {
+    securitySchemes: {
+      bearerAuth: {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+      },
+    },
     schemas: {
       Error: {
         type: 'object',
@@ -122,6 +130,135 @@ export const swaggerSpec = {
           isActive: { type: 'boolean', example: true },
         },
       },
+      User: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', example: 'usr-1' },
+          name: { type: 'string', example: 'Administrador' },
+          email: { type: 'string', format: 'email', example: 'admin@email.com' },
+          role: { type: 'string', example: 'ADMIN' },
+          isActive: { type: 'boolean', example: true },
+          createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' },
+        },
+      },
+      RegisterInput: {
+        type: 'object',
+        required: ['name', 'email', 'password'],
+        properties: {
+          name: { type: 'string', example: 'Administrador' },
+          email: { type: 'string', format: 'email', example: 'admin@email.com' },
+          password: { type: 'string', format: 'password', example: 'SenhaForte123' },
+        },
+      },
+      UserLoginInput: {
+        type: 'object',
+        required: ['email', 'password'],
+        properties: {
+          email: { type: 'string', format: 'email', example: 'admin@email.com' },
+          password: { type: 'string', format: 'password', example: 'SenhaForte123' },
+        },
+      },
+      CustomerLoginInput: {
+        type: 'object',
+        required: ['phone'],
+        properties: {
+          phone: { type: 'string', example: '85999999999' },
+        },
+      },
+      AuthResponse: {
+        type: 'object',
+        properties: {
+          accessToken: { type: 'string' },
+          tokenType: { type: 'string', example: 'Bearer' },
+          expiresIn: { type: 'integer', example: 3600 },
+        },
+      },
+      OrderItemInput: {
+        type: 'object',
+        required: ['productId', 'quantity'],
+        properties: {
+          productId: { type: 'string', example: 'prod-1' },
+          quantity: { type: 'integer', example: 2, minimum: 1 },
+        },
+      },
+      CreateOrderInput: {
+        type: 'object',
+        required: ['customerId', 'addressId', 'items'],
+        properties: {
+          customerId: { type: 'string', example: 'cust-1' },
+          addressId: { type: 'string', example: 'addr-1' },
+          items: {
+            type: 'array',
+            items: { $ref: '#/components/schemas/OrderItemInput' },
+          },
+        },
+      },
+      OrderStatusInput: {
+        type: 'object',
+        required: ['status'],
+        properties: {
+          status: {
+            type: 'string',
+            enum: ['CREATED', 'SENT', 'COMPLETED', 'CANCELED'],
+            example: 'SENT',
+          },
+        },
+      },
+      DeliveryAddressSnapshot: {
+        type: 'object',
+        properties: {
+          street: { type: 'string', example: 'Rua A' },
+          neighborhood: { type: 'string', example: 'Centro' },
+          city: { type: 'string', example: 'Fortaleza' },
+          state: { type: 'string', example: 'CE' },
+          postalCode: { type: 'string', example: '60000-000' },
+          country: { type: 'string', example: 'BR' },
+          complement: { type: 'string', nullable: true, example: 'Apto 101' },
+        },
+      },
+      OrderItem: {
+        type: 'object',
+        properties: {
+          productId: { type: 'string', example: 'prod-1' },
+          productName: { type: 'string', example: 'Teclado Mecanico' },
+          quantity: { type: 'integer', example: 2 },
+          unitPrice: { type: 'number', example: 299.9 },
+          lineTotal: { type: 'number', example: 599.8 },
+        },
+      },
+      Order: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', example: 'ord-1' },
+          customerId: { type: 'string', example: 'cust-1' },
+          addressId: { type: 'string', example: 'addr-1' },
+          deliveryAddress: { $ref: '#/components/schemas/DeliveryAddressSnapshot' },
+          status: { type: 'string', example: 'CREATED' },
+          totalAmount: { type: 'number', example: 799.8 },
+          totalItems: { type: 'integer', example: 3 },
+          createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' },
+          items: {
+            type: 'array',
+            items: { $ref: '#/components/schemas/OrderItem' },
+          },
+        },
+      },
+      OrderSummary: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', example: 'ord-1' },
+          customerId: { type: 'string', example: 'cust-1' },
+          addressId: { type: 'string', example: 'addr-1' },
+          deliveryAddress: { $ref: '#/components/schemas/DeliveryAddressSnapshot' },
+          status: { type: 'string', example: 'CREATED' },
+          totalAmount: { type: 'number', example: 799.8 },
+          totalItems: { type: 'integer', example: 3 },
+          createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' },
+        },
+      },
     },
     parameters: {
       customerId: {
@@ -155,22 +292,6 @@ export const swaggerSpec = {
     },
   },
   paths: {
-    '/health': {
-      get: {
-        tags: ['Health'],
-        summary: 'Verifica status da API',
-        responses: {
-          200: {
-            description: 'Servidor ativo',
-            content: {
-              'text/plain': {
-                schema: { type: 'string', example: 'SERVER IS RUNNING' },
-              },
-            },
-          },
-        },
-      },
-    },
     '/customers': {
       post: {
         tags: ['Customers'],
@@ -207,6 +328,7 @@ export const swaggerSpec = {
       get: {
         tags: ['Customers'],
         summary: 'Busca cliente por ID',
+        security: [{ bearerAuth: [] }],
         parameters: [{ $ref: '#/components/parameters/customerId' }],
         responses: {
           200: {
@@ -230,6 +352,7 @@ export const swaggerSpec = {
       put: {
         tags: ['Customers'],
         summary: 'Atualiza cliente',
+        security: [{ bearerAuth: [] }],
         parameters: [{ $ref: '#/components/parameters/customerId' }],
         requestBody: {
           required: true,
@@ -261,6 +384,7 @@ export const swaggerSpec = {
       delete: {
         tags: ['Customers'],
         summary: 'Remove cliente',
+        security: [{ bearerAuth: [] }],
         parameters: [{ $ref: '#/components/parameters/customerId' }],
         responses: {
           204: { description: 'Cliente removido' },
@@ -304,6 +428,7 @@ export const swaggerSpec = {
       post: {
         tags: ['Addresses'],
         summary: 'Cria endereco para o cliente',
+        security: [{ bearerAuth: [] }],
         parameters: [{ $ref: '#/components/parameters/customerId' }],
         requestBody: {
           required: true,
@@ -345,6 +470,7 @@ export const swaggerSpec = {
       put: {
         tags: ['Addresses'],
         summary: 'Atualiza endereco do cliente',
+        security: [{ bearerAuth: [] }],
         parameters: [
           { $ref: '#/components/parameters/customerId' },
           { $ref: '#/components/parameters/addressId' },
@@ -387,6 +513,7 @@ export const swaggerSpec = {
       delete: {
         tags: ['Addresses'],
         summary: 'Remove endereco do cliente',
+        security: [{ bearerAuth: [] }],
         parameters: [
           { $ref: '#/components/parameters/customerId' },
           { $ref: '#/components/parameters/addressId' },
@@ -408,6 +535,7 @@ export const swaggerSpec = {
       post: {
         tags: ['Products'],
         summary: 'Cria um produto',
+        security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
           content: {
@@ -473,6 +601,7 @@ export const swaggerSpec = {
       get: {
         tags: ['Products'],
         summary: 'Busca produto por ID',
+        security: [{ bearerAuth: [] }],
         parameters: [{ $ref: '#/components/parameters/productId' }],
         responses: {
           200: {
@@ -496,6 +625,7 @@ export const swaggerSpec = {
       put: {
         tags: ['Products'],
         summary: 'Atualiza produto',
+        security: [{ bearerAuth: [] }],
         parameters: [{ $ref: '#/components/parameters/productId' }],
         requestBody: {
           required: true,
@@ -535,6 +665,7 @@ export const swaggerSpec = {
       delete: {
         tags: ['Products'],
         summary: 'Remove produto',
+        security: [{ bearerAuth: [] }],
         parameters: [{ $ref: '#/components/parameters/productId' }],
         responses: {
           204: { description: 'Produto removido' },
@@ -553,6 +684,7 @@ export const swaggerSpec = {
       patch: {
         tags: ['Products'],
         summary: 'Atualiza status do produto',
+        security: [{ bearerAuth: [] }],
         parameters: [{ $ref: '#/components/parameters/productId' }],
         requestBody: {
           required: true,
@@ -581,6 +713,308 @@ export const swaggerSpec = {
           },
           400: {
             description: 'Erro de validacao',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/orders': {
+      post: {
+        tags: ['Orders'],
+        summary: 'Cria pedido com baixa de estoque transacional',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/CreateOrderInput' },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: 'Pedido criado',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Order' },
+              },
+            },
+          },
+          400: {
+            description: 'Erro de validacao',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+          404: {
+            description: 'Cliente ou produto nao encontrado',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+      get: {
+        tags: ['Orders'],
+        summary: 'Lista pedidos (geral ou por cliente)',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'customerId',
+            in: 'query',
+            required: false,
+            schema: { type: 'string' },
+            description: 'Filtra pedidos de um cliente',
+          },
+          {
+            name: 'status',
+            in: 'query',
+            required: false,
+            schema: { type: 'string', enum: ['CREATED', 'SENT', 'COMPLETED', 'CANCELED'] },
+            description: 'Filtra por status do pedido',
+          },
+          {
+            name: 'dateFrom',
+            in: 'query',
+            required: false,
+            schema: { type: 'string', format: 'date-time' },
+            description: 'Data inicial de criação do pedido (ISO ou YYYY-MM-DD)',
+          },
+          {
+            name: 'dateTo',
+            in: 'query',
+            required: false,
+            schema: { type: 'string', format: 'date-time' },
+            description: 'Data final de criação do pedido (ISO ou YYYY-MM-DD)',
+          },
+        ],
+        responses: {
+          200: {
+            description: 'Lista de pedidos',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'array',
+                  items: { $ref: '#/components/schemas/OrderSummary' },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/orders/{id}': {
+      get: {
+        tags: ['Orders'],
+        summary: 'Busca pedido por ID',
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        responses: {
+          200: {
+            description: 'Pedido encontrado',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Order' },
+              },
+            },
+          },
+          404: {
+            description: 'Pedido nao encontrado',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/orders/{id}/status': {
+      patch: {
+        tags: ['Orders'],
+        summary: 'Atualiza status do pedido',
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/OrderStatusInput' },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Status atualizado',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Order' },
+              },
+            },
+          },
+          400: {
+            description: 'Erro de validacao',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+          404: {
+            description: 'Pedido nao encontrado',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/orders/customer/{customerId}': {
+      get: {
+        tags: ['Orders'],
+        summary: 'Lista pedidos por cliente (rota dedicada com GSI)',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'customerId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+          },
+          {
+            name: 'status',
+            in: 'query',
+            required: false,
+            schema: { type: 'string', enum: ['CREATED', 'SENT', 'COMPLETED', 'CANCELED'] },
+            description: 'Filtra por status do pedido',
+          },
+          {
+            name: 'dateFrom',
+            in: 'query',
+            required: false,
+            schema: { type: 'string', format: 'date-time' },
+            description: 'Data inicial de criação do pedido (ISO ou YYYY-MM-DD)',
+          },
+          {
+            name: 'dateTo',
+            in: 'query',
+            required: false,
+            schema: { type: 'string', format: 'date-time' },
+            description: 'Data final de criação do pedido (ISO ou YYYY-MM-DD)',
+          },
+        ],
+        responses: {
+          200: {
+            description: 'Lista de pedidos do cliente',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'array',
+                  items: { $ref: '#/components/schemas/Order' },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/auth/users/register': {
+      post: {
+        tags: ['Auth'],
+        summary: 'Registra usuário administrador',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/RegisterInput' },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: 'Usuário registrado com sucesso',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/AuthResponse' },
+              },
+            },
+          },
+          400: {
+            description: 'Erro de validação',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/auth/users/login': {
+      post: {
+        tags: ['Auth'],
+        summary: 'Autentica usuário administrador (email/senha)',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/UserLoginInput' },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Autenticação realizada',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/AuthResponse' },
+              },
+            },
+          },
+          401: {
+            description: 'Credenciais inválidas',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/auth/customers/login': {
+      post: {
+        tags: ['Auth'],
+        summary: 'Autentica cliente (telefone)',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/CustomerLoginInput' },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Autenticação realizada',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/AuthResponse' },
+              },
+            },
+          },
+          401: {
+            description: 'Credenciais inválidas',
             content: {
               'application/json': {
                 schema: { $ref: '#/components/schemas/Error' },

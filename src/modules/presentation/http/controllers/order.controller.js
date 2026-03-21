@@ -1,6 +1,7 @@
 import { logger } from '../../../shared/logger/console-logger.js';
 import { ValidationError } from '../../../domain/errors/validation.error.js';
 import { toHttpOrder, toHttpOrderSummary } from '../presenters/order.presenter.js';
+import { ForbiddenError } from '../../../application/errors/forbidden.error.js';
 
 const ALLOWED_STATUS = ['CREATED', 'SENT', 'COMPLETED', 'CANCELED'];
 
@@ -44,6 +45,10 @@ export class OrderController {
 
   create = async (req, res) => {
     const { customerId, addressId, items } = req.body;
+    const auth = req.auth;
+    if (auth?.type === 'CUSTOMER' && auth.sub !== customerId) {
+      throw new ForbiddenError('Cliente só pode criar pedido para si mesmo');
+    }
     logger.info('ORDER', 'CREATE REQUEST', { customerId, addressId, itemsCount: items?.length ?? 0 });
 
     const order = await this.orderService.createOrder({ customerId, addressId, items });
@@ -57,6 +62,11 @@ export class OrderController {
     logger.info('ORDER', 'GET BY ID REQUEST', { id });
 
     const order = await this.orderService.getOrderById(id);
+    const auth = req.auth;
+    if (auth?.type === 'CUSTOMER' && auth.sub !== order.customerId) {
+      throw new ForbiddenError('Você não pode consultar pedido de outro cliente');
+    }
+
     const response = toHttpOrder(order);
     logger.info('ORDER', 'GET BY ID SUCCESS', { id });
     return res.status(200).json(response);
@@ -64,6 +74,11 @@ export class OrderController {
 
   getByCustomerId = async (req, res) => {
     const { customerId } = req.params;
+    const auth = req.auth;
+    if (auth?.type === 'CUSTOMER' && auth.sub !== customerId) {
+      throw new ForbiddenError('Você não pode consultar pedidos de outro cliente');
+    }
+
     const filters = parseOrderFilters(req.query);
     logger.info('ORDER', 'GET BY CUSTOMER REQUEST', { customerId, ...filters });
 
@@ -85,7 +100,13 @@ export class OrderController {
   };
 
   getAll = async (req, res) => {
-    const customerId = req.query.customerId;
+    const auth = req.auth;
+    const requestedCustomerId = req.query.customerId;
+    if (auth?.type === 'CUSTOMER' && requestedCustomerId && requestedCustomerId !== auth.sub) {
+      throw new ForbiddenError('Você não pode filtrar pedidos de outro cliente');
+    }
+
+    const customerId = auth?.type === 'CUSTOMER' ? auth.sub : requestedCustomerId;
     const filters = parseOrderFilters(req.query);
     logger.info('ORDER', 'GET ALL REQUEST', { customerId, ...filters });
 

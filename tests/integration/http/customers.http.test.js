@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CustomerController } from '../../../src/modules/presentation/http/controllers/customer.controller.js';
 import { httpErrorHandler } from '../../../src/modules/presentation/http/middlewares/error-handler.js';
 import { createCustomersRouter } from '../../../src/modules/presentation/http/routes/customers.routes.js';
+import { TokenService } from '../../../src/modules/shared/providers/token-service.js';
 
 function criarAplicacao(serviceMock) {
   const app = express();
@@ -17,6 +18,8 @@ function criarAplicacao(serviceMock) {
 describe('Integração HTTP - Clientes', () => {
   let serviceMock;
   let app;
+  let customerToken;
+  let userToken;
 
   beforeEach(() => {
     serviceMock = {
@@ -30,6 +33,9 @@ describe('Integração HTTP - Clientes', () => {
       deleteAddress: vi.fn(),
     };
     app = criarAplicacao(serviceMock);
+    const tokenService = new TokenService();
+    customerToken = tokenService.sign({ sub: 'cust-2', type: 'CUSTOMER' });
+    userToken = tokenService.sign({ sub: 'user-1', type: 'USER', role: 'ADMIN' });
   });
 
   it('deve criar cliente com sucesso e retornar status 201 (fluxo feliz)', async () => {
@@ -67,7 +73,9 @@ describe('Integração HTTP - Clientes', () => {
     serviceMock.getCustomerById.mockResolvedValue(null);
 
     // Act
-    const resposta = await request(app).get('/customers/cust-nao-existe');
+    const resposta = await request(app)
+      .get('/customers/cust-nao-existe')
+      .set('Authorization', `Bearer ${userToken}`);
 
     // Assert
     expect(resposta.status).toBe(404);
@@ -86,11 +94,20 @@ describe('Integração HTTP - Clientes', () => {
     });
 
     // Act
-    const resposta = await request(app).get('/customers/cust-2');
+    const resposta = await request(app)
+      .get('/customers/cust-2')
+      .set('Authorization', `Bearer ${customerToken}`);
 
     // Assert
     expect(resposta.status).toBe(200);
     expect(Array.isArray(resposta.body.addresses)).toBe(true);
     expect(resposta.body.addresses).toHaveLength(0);
+  });
+
+  it('deve retornar 401 ao buscar cliente por id sem token (caso de erro)', async () => {
+    const resposta = await request(app).get('/customers/cust-2');
+
+    expect(resposta.status).toBe(401);
+    expect(resposta.body.error).toBe('Token não informado');
   });
 });
