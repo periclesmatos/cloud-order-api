@@ -33,6 +33,11 @@ Principais capacidades:
 - Testes: Vitest + Supertest
 - Swagger UI para documentação
 
+## Configuração de Ambiente
+- Use o arquivo `.env.example` como base para criar seu `.env`.
+- Nunca versione chaves reais no repositório.
+- Em caso de vazamento, revogue e gere novas credenciais imediatamente.
+
 ## Arquitetura
 Organização por camadas/módulos:
 - `domain`: entidades e value objects

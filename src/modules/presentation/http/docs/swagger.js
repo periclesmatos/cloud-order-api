@@ -148,7 +148,7 @@ export const swaggerSpec = {
         properties: {
           name: { type: 'string', example: 'Administrador' },
           email: { type: 'string', format: 'email', example: 'admin@email.com' },
-          password: { type: 'string', format: 'password', example: 'SenhaForte123' },
+          password: { type: 'string', format: 'password', example: 'A9!zT7#kL2' },
         },
       },
       UserLoginInput: {
@@ -156,7 +156,7 @@ export const swaggerSpec = {
         required: ['email', 'password'],
         properties: {
           email: { type: 'string', format: 'email', example: 'admin@email.com' },
-          password: { type: 'string', format: 'password', example: 'SenhaForte123' },
+          password: { type: 'string', format: 'password', example: 'A9!zT7#kL2' },
         },
       },
       CustomerLoginInput: {

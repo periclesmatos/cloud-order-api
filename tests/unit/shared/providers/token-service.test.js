@@ -3,7 +3,7 @@ import { TokenService } from '../../../../src/modules/shared/providers/token-ser
 
 describe('TokenService (unit)', () => {
   it('deve assinar e validar token com payload (fluxo feliz)', () => {
-    const tokenService = new TokenService('segredo-teste');
+    const tokenService = new TokenService('unit-token-signer-v1');
     const token = tokenService.sign({ sub: 'user-1', type: 'USER' }, 3600);
     const payload = tokenService.verify(token);
 

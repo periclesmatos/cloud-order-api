@@ -40,7 +40,7 @@ describe('AuthService (unit)', () => {
     const result = await service.registerUser({
       name: 'Admin',
       email: 'admin@email.com',
-      password: 'SenhaForte123',
+      password: 'A9!zT7#kL2',
     });
 
     expect(result.user.id).toBe('user-1');
@@ -58,7 +58,7 @@ describe('AuthService (unit)', () => {
     });
     passwordHasher.compare.mockReturnValue(true);
 
-    const result = await service.loginUser({ email: 'admin@email.com', password: 'SenhaForte123' });
+    const result = await service.loginUser({ email: 'admin@email.com', password: 'A9!zT7#kL2' });
 
     expect(result.actor.type).toBe('USER');
     expect(result.accessToken).toBe('token-123');

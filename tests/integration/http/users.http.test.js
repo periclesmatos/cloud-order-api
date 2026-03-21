@@ -44,7 +44,7 @@ describe('Integracao HTTP - Auth', () => {
     const response = await request(app).post('/auth/users/register').send({
       name: 'Admin',
       email: 'admin@email.com',
-      password: 'SenhaForte123',
+      password: 'A9!zT7#kL2',
     });
 
     expect(response.status).toBe(201);
@@ -62,7 +62,7 @@ describe('Integracao HTTP - Auth', () => {
 
     const response = await request(app).post('/auth/users/login').send({
       email: 'admin@email.com',
-      password: 'SenhaForte123',
+      password: 'A9!zT7#kL2',
     });
 
     expect(response.status).toBe(200);
@@ -90,7 +90,7 @@ describe('Integracao HTTP - Auth', () => {
 
     const response = await request(app).post('/auth/users/login').send({
       email: 'admin@email.com',
-      password: 'SenhaErrada',
+      password: 'B8@qP4%rN1',
     });
 
     expect(response.status).toBe(401);
