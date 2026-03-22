@@ -23,7 +23,6 @@ Thumbs.db
 # Build
 dist/
 build/
-docs/
 
 # Logs
 logs/
