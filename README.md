@@ -1,62 +1,44 @@
 # Cloud Order API
 
-API REST para gestão de clientes, produtos e pedidos, com autenticação JWT, autorização por perfil, controle transacional de estoque e deploy em nuvem.
+Back-end API para gestão de clientes, produtos e pedidos, com autenticação JWT, autorização por perfil, controle transacional de estoque e deploy em nuvem.
 
 ## Sumário
-- [Resumo Executivo](#resumo-executivo)
-- [Status do Projeto](#status-do-projeto)
-- [Escopo Funcional](#escopo-funcional)
+- [Visão Geral](#visão-geral)
 - [Arquitetura](#arquitetura)
 - [Tecnologias](#tecnologias)
+- [Requisitos](#requisitos)
 - [Setup Local](#setup-local)
 - [Variáveis de Ambiente](#variáveis-de-ambiente)
-- [Testes e Qualidade](#testes-e-qualidade)
+- [Endpoints e Documentação](#endpoints-e-documentação)
+- [Testes](#testes)
 - [Segurança](#segurança)
 - [CI/CD e Deploy](#cicd-e-deploy)
+- [Operação em Produção](#operação-em-produção)
 - [Banco de Dados (DynamoDB)](#banco-de-dados-dynamodb)
-- [Aderência ao Trabalho (Checklist)](#aderência-ao-trabalho-checklist)
-- [Entregáveis Acadêmicos](#entregáveis-acadêmicos)
 
-## Resumo Executivo
-Este projeto implementa o back-end de um sistema de pedidos com:
+## Visão Geral
+A API implementa:
 - autenticação para `USER` (admin) e `CUSTOMER` (cliente);
 - autorização por perfil e ownership;
 - CRUD de clientes, produtos e pedidos;
-- controle de status de pedidos com regras de negócio;
-- controle transacional de estoque no DynamoDB;
-- documentação da API via Swagger;
-- pipeline CI/CD com build, testes e deploy automático em produção.
+- fluxo de status de pedidos com regras de negócio;
+- persistência em DynamoDB com operações transacionais;
+- observabilidade via logs de acesso e erro;
+- pipeline CI/CD com build, testes e deploy automático.
 
-## Status do Projeto
-- Back-end: concluído e em produção.
-- CI/CD (produção): concluído.
-- Front-end: pendente.
-- Entregáveis finais (relatório + vídeo): pendente.
-
-## Escopo Funcional
-### Módulos principais
-- Clientes: cadastro, consulta, atualização, remoção e endereços.
-- Produtos: cadastro, listagem, consulta, atualização, remoção e ativação/desativação.
-- Pedidos: criação, consulta por cliente/global e atualização de status.
-- Auth: registro/login de admin e login de cliente.
-
-### Regras de acesso (resumo)
-- Público: login/registro e endpoints públicos de consulta definidos nas rotas.
-- Autenticado: acesso conforme perfil.
-- Admin (`USER`): operações administrativas.
-- Cliente (`CUSTOMER`): acesso restrito aos próprios recursos.
+Este repositório contém o back-end da aplicação.
 
 ## Arquitetura
 Arquitetura em camadas:
 - `domain`: entidades e value objects
 - `application`: regras de negócio (services)
 - `infra`: persistência DynamoDB e mappers
-- `presentation/http`: rotas, controllers, middlewares e docs
-- `shared`: providers e logger
+- `presentation/http`: controllers, rotas, middlewares e Swagger
+- `shared`: providers (token, hash, UUID, logger)
 
-Arquivos-chave:
+Arquivos principais:
 - App factory: [`src/app.factory.js`](src/app.factory.js)
-- Bootstrap: [`src/app.js`](src/app.js)
+- Bootstrap da aplicação: [`src/app.js`](src/app.js)
 - Rotas HTTP: [`src/modules/presentation/http/routes/index.js`](src/modules/presentation/http/routes/index.js)
 
 ## Tecnologias
@@ -70,6 +52,12 @@ Arquivos-chave:
 - Docker
 - GitHub Actions
 
+## Requisitos
+- Node.js 22+
+- npm 10+
+- Docker e Docker Compose
+- Tabela DynamoDB configurada
+
 ## Setup Local
 1. Instalar dependências:
 ```bash
@@ -78,13 +66,13 @@ npm ci
 
 2. Criar `.env` com base em `.env.example`.
 
-3. Rodar aplicação:
+3. Iniciar aplicação:
 ```bash
 npm run dev
 ```
 
 4. Acessar:
-- API/Swagger: `http://localhost:3000/`
+- API + Swagger: `http://localhost:3000/`
 
 ## Variáveis de Ambiente
 Arquivo de referência: [`.env.example`](.env.example)
@@ -100,28 +88,32 @@ Principais variáveis:
 - `AUTH_RATE_LIMIT_WINDOW_MS`
 - `AUTH_RATE_LIMIT_MAX`
 
-Boas práticas:
-- não commitar credenciais reais;
-- rotacionar credenciais em caso de vazamento;
-- usar segredos no ambiente de produção.
+Recomendação:
+- nunca commitar credenciais reais;
+- manter segredos apenas em variáveis de ambiente/secret manager.
 
-## Testes e Qualidade
-Scripts:
+## Endpoints e Documentação
+- Swagger UI: `GET /`
+- Referência de rotas: [`docs/ROTAS_API.md`](docs/ROTAS_API.md)
+
+## Testes
+Executar suíte completa:
 ```bash
 npm run test
+```
+
+Executar por tipo:
+```bash
 npm run test:unit
 npm run test:integration
 ```
 
-Stack de testes:
-- Unitários e integração com Vitest + Supertest.
-
 ## Segurança
 Controles implementados:
 - autenticação JWT;
-- autorização por perfil/ownership;
+- autorização por perfil e ownership;
 - tratamento centralizado de erros HTTP;
-- logs de acesso e erro;
+- logs estruturados de acesso e erro;
 - rate limit global e específico para autenticação.
 
 Rate limit configurável em [`src/app.factory.js`](src/app.factory.js):
@@ -133,11 +125,10 @@ Rate limit configurável em [`src/app.factory.js`](src/app.factory.js):
   - `AUTH_RATE_LIMIT_MAX` (default `10`)
 
 ## CI/CD e Deploy
-Workflow: [`.github/workflows/ci-cd.yml`](.github/workflows/ci-cd.yml)
+Workflow principal: [`.github/workflows/ci-cd.yml`](.github/workflows/ci-cd.yml)
 
-Fluxo atual:
+Fluxo:
 - `pull_request` para `production`:
-  - checkout
   - `npm ci`
   - `docker build -t cloud-order-api:ci .`
   - `npm run test`
@@ -156,6 +147,18 @@ Estratégia de branches:
 - `alpha`: desenvolvimento
 - `production`: produção
 
+## Operação em Produção
+Comandos úteis no servidor:
+```bash
+cd <APP_DIR>
+git fetch origin
+git checkout production
+git reset --hard origin/production
+docker compose up -d --build
+docker compose ps
+docker compose logs --tail=100
+```
+
 ## Banco de Dados (DynamoDB)
 Modelo com single-table e chaves compostas.
 
@@ -165,30 +168,3 @@ Modelo com single-table e chaves compostas.
 - `GSI_OrderByCostumer`
 
 Persistência é externa ao container (serviço gerenciado em nuvem).
-
-## Aderência ao Trabalho (Checklist)
-Baseado em **Proposta de atividade – Desenvolvimento de Software em Nuvem**.
-
-- Aplicação web com caso de uso elaborado: `OK` (sistema de pedidos com status/histórico).
-- API RESTful documentada: `OK` (Swagger).
-- Autenticação e autorização: `OK`.
-- CRUD completo no back-end: `OK`.
-- Validação de dados no back-end: `OK`.
-- Logs de acesso e erro: `OK`.
-- Back-end containerizado e em nuvem: `OK` (Docker + AWS EC2).
-- Banco gerenciado e fora do container: `OK` (DynamoDB).
-- CI/CD com build + testes + deploy: `OK`.
-- Segurança e boas práticas: `OK` (env vars, proteção de rotas, erro centralizado, rate limit).
-- Front-end em framework moderno com deploy em nuvem: `PENDENTE`.
-
-## Entregáveis Acadêmicos
-Para fechar 100% da atividade, ainda faltam:
-- Front-end (React/Vue/Angular) com deploy (Vercel/Netlify/similar).
-- Relatório técnico (até 6 páginas) com:
-  - visão geral;
-  - arquitetura em nuvem;
-  - tecnologias/serviços;
-  - estratégia de CI/CD;
-  - papéis da equipe;
-  - dificuldades e soluções.
-- Vídeo (até 7 min) demonstrando arquitetura, funcionamento, deploy e pipeline/testes.
