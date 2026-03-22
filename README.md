@@ -125,7 +125,7 @@ Rate limit configurável em [`src/app.factory.js`](src/app.factory.js):
   - `AUTH_RATE_LIMIT_MAX` (default `10`)
 
 ## CI/CD e Deploy
-Workflow principal: [`.github/workflows/ci-cd.yml`](.github/workflows/ci-cd.yml)
+Workflow principal: [`.github/workflows/ci-pr.yml`](.github/workflows/ci-pr.yml) e [`.github/workflows/deploy-production.yml`](.github/workflows/deploy-production.yml)
 
 Fluxo:
 - `pull_request` para `production`:
