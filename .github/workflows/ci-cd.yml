@@ -10,7 +10,7 @@ on:
 
 jobs:
   ci:
-    name: CI (tests)
+    name: CI (build + tests)
     runs-on: ubuntu-latest
 
     steps:
@@ -25,6 +25,9 @@ jobs:
 
       - name: Instalar dependências
         run: npm ci
+
+      - name: Build do back-end (Docker)
+        run: docker build -t cloud-order-api:ci .
 
       - name: Rodar testes
         run: npm run test
