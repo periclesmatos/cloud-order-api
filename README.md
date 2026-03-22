@@ -1,131 +1,194 @@
 # Cloud Order API
 
-API para gestão de clientes, produtos e pedidos com controle de estoque transacional, autenticação JWT e autorização por perfil.
+API REST para gestão de clientes, produtos e pedidos, com autenticação JWT, autorização por perfil, controle transacional de estoque e deploy em nuvem.
 
 ## Sumário
-- [Visão Geral](#visão-geral)
-- [Stack](#stack)
+- [Resumo Executivo](#resumo-executivo)
+- [Status do Projeto](#status-do-projeto)
+- [Escopo Funcional](#escopo-funcional)
 - [Arquitetura](#arquitetura)
-- [Módulos de Domínio](#módulos-de-domínio)
-- [Regras de Acesso](#regras-de-acesso)
-- [Documentação da API](#documentação-da-api)
-- [DynamoDB e Índices](#dynamodb-e-índices)
-- [Qualidade e Testes](#qualidade-e-testes)
-- [Observações de Segurança](#observações-de-segurança)
+- [Tecnologias](#tecnologias)
+- [Setup Local](#setup-local)
+- [Variáveis de Ambiente](#variáveis-de-ambiente)
+- [Testes e Qualidade](#testes-e-qualidade)
+- [Segurança](#segurança)
+- [CI/CD e Deploy](#cicd-e-deploy)
+- [Banco de Dados (DynamoDB)](#banco-de-dados-dynamodb)
+- [Aderência ao Trabalho (Checklist)](#aderência-ao-trabalho-checklist)
+- [Entregáveis Acadêmicos](#entregáveis-acadêmicos)
 
-## Visão Geral
-Principais capacidades:
-- Cadastro e gestão de clientes e endereços.
-- Cadastro e gestão de produtos (ativar/desativar, atualização e remoção).
-- Criação de pedidos com baixa de estoque em transação (evita concorrência).
-- Alteração de status de pedido com regras de transição e estorno de estoque no cancelamento.
-- Autenticação separada para:
-  - `USER` (admin): e-mail + senha.
-  - `CUSTOMER` (cliente): telefone.
-- Autorização por perfil e por ownership (cliente só acessa seus próprios recursos).
+## Resumo Executivo
+Este projeto implementa o back-end de um sistema de pedidos com:
+- autenticação para `USER` (admin) e `CUSTOMER` (cliente);
+- autorização por perfil e ownership;
+- CRUD de clientes, produtos e pedidos;
+- controle de status de pedidos com regras de negócio;
+- controle transacional de estoque no DynamoDB;
+- documentação da API via Swagger;
+- pipeline CI/CD com build, testes e deploy automático em produção.
 
-## Stack
-- Node.js (ESM)
-- Express
-- AWS SDK v3 (`@aws-sdk/client-dynamodb`, `@aws-sdk/lib-dynamodb`)
-- JWT (`jsonwebtoken`)
-- Hash de senha (`bcryptjs`)
-- Testes: Vitest + Supertest
-- Swagger UI para documentação
+## Status do Projeto
+- Back-end: concluído e em produção.
+- CI/CD (produção): concluído.
+- Front-end: pendente.
+- Entregáveis finais (relatório + vídeo): pendente.
 
-## Configuração de Ambiente
-- Use o arquivo `.env.example` como base para criar seu `.env`.
-- Nunca versione chaves reais no repositório.
-- Em caso de vazamento, revogue e gere novas credenciais imediatamente.
+## Escopo Funcional
+### Módulos principais
+- Clientes: cadastro, consulta, atualização, remoção e endereços.
+- Produtos: cadastro, listagem, consulta, atualização, remoção e ativação/desativação.
+- Pedidos: criação, consulta por cliente/global e atualização de status.
+- Auth: registro/login de admin e login de cliente.
+
+### Regras de acesso (resumo)
+- Público: login/registro e endpoints públicos de consulta definidos nas rotas.
+- Autenticado: acesso conforme perfil.
+- Admin (`USER`): operações administrativas.
+- Cliente (`CUSTOMER`): acesso restrito aos próprios recursos.
 
 ## Arquitetura
-Organização por camadas/módulos:
+Arquitetura em camadas:
 - `domain`: entidades e value objects
-- `application`: regras de negócio (services) e erros de aplicação
+- `application`: regras de negócio (services)
 - `infra`: persistência DynamoDB e mappers
-- `presentation/http`: controllers, rotas, middlewares, presenters e swagger
-- `shared`: providers (UUID, token, password hasher, logger)
+- `presentation/http`: rotas, controllers, middlewares e docs
+- `shared`: providers e logger
 
-Composição de dependências centralizada em:
-- [`src/app.factory.js`](src/app.factory.js)
+Arquivos-chave:
+- App factory: [`src/app.factory.js`](src/app.factory.js)
+- Bootstrap: [`src/app.js`](src/app.js)
+- Rotas HTTP: [`src/modules/presentation/http/routes/index.js`](src/modules/presentation/http/routes/index.js)
 
-Bootstrap da aplicação:
-- [`src/app.js`](src/app.js)
+## Tecnologias
+- Node.js 22+
+- Express
+- AWS SDK v3 (DynamoDB)
+- JWT (`jsonwebtoken`)
+- `bcryptjs`
+- Vitest + Supertest
+- Swagger UI
+- Docker
+- GitHub Actions
 
-## Módulos de Domínio
-### Clientes
-- Cadastro de cliente com unicidade por telefone.
-- Gestão de endereços por cliente.
+## Setup Local
+1. Instalar dependências:
+```bash
+npm ci
+```
 
-### Produtos
-- Cadastro, atualização, ativação/desativação e exclusão.
-- Filtros por nome e status ativo/inativo.
+2. Criar `.env` com base em `.env.example`.
 
-### Pedidos
-- Criação com snapshot de endereço de entrega.
-- Itens com validação de quantidade e cálculo de totais.
-- Baixa de estoque com proteção de concorrência via transação.
-- Fluxo de status:
-  - `CREATED -> SENT -> COMPLETED`
-  - `CREATED -> CANCELED`
-- Cancelamento realiza estorno de estoque.
+3. Rodar aplicação:
+```bash
+npm run dev
+```
 
-### Auth
-- Usuário admin:
-  - registro e login por `email/senha`
-- Cliente:
-  - login por `telefone`
-- Emissão de JWT para autorização nas rotas protegidas.
+4. Acessar:
+- API/Swagger: `http://localhost:3000/`
 
-## Regras de Acesso
-Perfis:
-- `USER` (admin)
-- `CUSTOMER`
+## Variáveis de Ambiente
+Arquivo de referência: [`.env.example`](.env.example)
 
-Matriz resumida:
-- `POST /auth/users/register`: público
-- `POST /auth/users/login`: público
-- `POST /auth/customers/login`: público
-- `POST /customers`: público
-- `GET /customers/phone/:phone`: público
-- `GET/PUT/DELETE /customers/:id`: próprio cliente ou admin
-- Endereços do cliente: próprio cliente ou admin
-- `GET /products`: público
-- `GET /products/:id`: autenticado (`CUSTOMER` ou `USER`)
-- CRUD/status de produtos: apenas admin
-- Criação de pedido: autenticado
-  - cliente só para si
-  - admin para qualquer cliente
-- Consultas de pedido: cliente só os próprios; admin geral
-- Atualização de status de pedido: apenas admin
+Principais variáveis:
+- `PORT`
+- `AWS_REGION`
+- `DDB_TABLE`
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- `RATE_LIMIT_WINDOW_MS`
+- `RATE_LIMIT_MAX`
+- `AUTH_RATE_LIMIT_WINDOW_MS`
+- `AUTH_RATE_LIMIT_MAX`
 
-## Documentação da API
-- Swagger UI: `GET /`
-- Documento detalhado de rotas:
-  - [`docs/ROTAS_API.md`](docs/ROTAS_API.md)
+Boas práticas:
+- não commitar credenciais reais;
+- rotacionar credenciais em caso de vazamento;
+- usar segredos no ambiente de produção.
 
-## DynamoDB e Índices
-A aplicação usa single-table com chaves compostas (`PK`, `SK`) e índices para consultas.
+## Testes e Qualidade
+Scripts:
+```bash
+npm run test
+npm run test:unit
+npm run test:integration
+```
 
-Índices utilizados no código:
-- `type-index`: listagem de clientes (`findAll` em customer repository)
-- `GSI_AllOrders`: listagem global de pedidos
-- `GSI_OrderByCostumer`: pedidos por cliente
+Stack de testes:
+- Unitários e integração com Vitest + Supertest.
 
-Além disso, existem locks e padrões de chave para unicidade:
-- lock de telefone para cliente
-- lock de e-mail para usuário admin
+## Segurança
+Controles implementados:
+- autenticação JWT;
+- autorização por perfil/ownership;
+- tratamento centralizado de erros HTTP;
+- logs de acesso e erro;
+- rate limit global e específico para autenticação.
 
-## Qualidade e Testes
-Status validado:
-- Suíte completa executada com sucesso.
-- Resultado: `24 files`, `140 tests` passando.
+Rate limit configurável em [`src/app.factory.js`](src/app.factory.js):
+- Global:
+  - `RATE_LIMIT_WINDOW_MS` (default `900000`)
+  - `RATE_LIMIT_MAX` (default `100`)
+- `/auth`:
+  - `AUTH_RATE_LIMIT_WINDOW_MS` (default `900000`)
+  - `AUTH_RATE_LIMIT_MAX` (default `10`)
 
-## Observações de Segurança
-- Tokens JWT são assinados com `HS256`.
-- Senhas de admin são armazenadas com `bcrypt`.
-- Recomendado para produção:
-  - usar segredo forte em `AUTH_SECRET`
-  - adicionar expiração curta + refresh token
-  - implementar OTP para login de cliente por telefone
-  - rate limit em endpoints de autenticação
+## CI/CD e Deploy
+Workflow: [`.github/workflows/ci-cd.yml`](.github/workflows/ci-cd.yml)
+
+Fluxo atual:
+- `pull_request` para `production`:
+  - checkout
+  - `npm ci`
+  - `docker build -t cloud-order-api:ci .`
+  - `npm run test`
+- `push` em `production`:
+  - deploy automático na EC2 via SSH
+  - atualização para `origin/production`
+  - `docker compose up -d --build`
+
+Segredos necessários no GitHub:
+- `EC2_SSH_KEY`
+- `EC2_HOST`
+- `EC2_USER`
+- `APP_DIR`
+
+Estratégia de branches:
+- `alpha`: desenvolvimento
+- `production`: produção
+
+## Banco de Dados (DynamoDB)
+Modelo com single-table e chaves compostas.
+
+Índices utilizados:
+- `type-index`
+- `GSI_AllOrders`
+- `GSI_OrderByCostumer`
+
+Persistência é externa ao container (serviço gerenciado em nuvem).
+
+## Aderência ao Trabalho (Checklist)
+Baseado em **Proposta de atividade – Desenvolvimento de Software em Nuvem**.
+
+- Aplicação web com caso de uso elaborado: `OK` (sistema de pedidos com status/histórico).
+- API RESTful documentada: `OK` (Swagger).
+- Autenticação e autorização: `OK`.
+- CRUD completo no back-end: `OK`.
+- Validação de dados no back-end: `OK`.
+- Logs de acesso e erro: `OK`.
+- Back-end containerizado e em nuvem: `OK` (Docker + AWS EC2).
+- Banco gerenciado e fora do container: `OK` (DynamoDB).
+- CI/CD com build + testes + deploy: `OK`.
+- Segurança e boas práticas: `OK` (env vars, proteção de rotas, erro centralizado, rate limit).
+- Front-end em framework moderno com deploy em nuvem: `PENDENTE`.
+
+## Entregáveis Acadêmicos
+Para fechar 100% da atividade, ainda faltam:
+- Front-end (React/Vue/Angular) com deploy (Vercel/Netlify/similar).
+- Relatório técnico (até 6 páginas) com:
+  - visão geral;
+  - arquitetura em nuvem;
+  - tecnologias/serviços;
+  - estratégia de CI/CD;
+  - papéis da equipe;
+  - dificuldades e soluções.
+- Vídeo (até 7 min) demonstrando arquitetura, funcionamento, deploy e pipeline/testes.
