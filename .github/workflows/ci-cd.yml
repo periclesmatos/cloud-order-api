@@ -1,12 +1,38 @@
-name: Deploy develop para EC2
+name: CI/CD Production
 
 on:
+  pull_request:
+    branches:
+      - production
   push:
     branches:
-      - alpha
+      - production
 
 jobs:
+  ci:
+    name: CI (tests)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Rodar testes
+        run: npm run test
+
   deploy:
+    name: Deploy na EC2
+    needs: ci
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
 
     steps:
@@ -26,6 +52,6 @@ jobs:
             set -e
             cd ${{ secrets.APP_DIR }}
             git fetch origin
-            git reset --hard origin/alpha
+            git reset --hard origin/production
             docker compose up -d --build
           EOF
