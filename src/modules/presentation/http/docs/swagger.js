@@ -174,6 +174,17 @@ export const swaggerSpec = {
           expiresIn: { type: 'integer', example: 3600 },
         },
       },
+      MeResponse: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', example: 'usr-1' },
+          type: { type: 'string', enum: ['USER', 'CUSTOMER'] },
+          name: { type: 'string', example: 'Administrador' },
+          email: { type: 'string', format: 'email', example: 'admin@email.com', nullable: true },
+          role: { type: 'string', example: 'ADMIN', nullable: true },
+          phone: { type: 'string', example: '85999999999', nullable: true },
+        },
+      },
       OrderItemInput: {
         type: 'object',
         required: ['productId', 'quantity'],
@@ -471,10 +482,7 @@ export const swaggerSpec = {
         tags: ['Addresses'],
         summary: 'Atualiza endereco do cliente',
         security: [{ bearerAuth: [] }],
-        parameters: [
-          { $ref: '#/components/parameters/customerId' },
-          { $ref: '#/components/parameters/addressId' },
-        ],
+        parameters: [{ $ref: '#/components/parameters/customerId' }, { $ref: '#/components/parameters/addressId' }],
         requestBody: {
           required: true,
           content: {
@@ -514,10 +522,7 @@ export const swaggerSpec = {
         tags: ['Addresses'],
         summary: 'Remove endereco do cliente',
         security: [{ bearerAuth: [] }],
-        parameters: [
-          { $ref: '#/components/parameters/customerId' },
-          { $ref: '#/components/parameters/addressId' },
-        ],
+        parameters: [{ $ref: '#/components/parameters/customerId' }, { $ref: '#/components/parameters/addressId' }],
         responses: {
           204: { description: 'Endereco removido' },
           404: {
@@ -1015,6 +1020,31 @@ export const swaggerSpec = {
           },
           401: {
             description: 'Credenciais inválidas',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/auth/me': {
+      get: {
+        tags: ['Auth'],
+        summary: 'Busca dados do usuário autenticado',
+        security: [{ bearerAuth: [] }],
+        responses: {
+          200: {
+            description: 'Dados do usuário',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/MeResponse' },
+              },
+            },
+          },
+          401: {
+            description: 'Não autenticado',
             content: {
               'application/json': {
                 schema: { $ref: '#/components/schemas/Error' },
