@@ -42,4 +42,13 @@ export class AuthController {
     logger.info('AUTH', 'CUSTOMER LOGIN SUCCESS', { actorId: result.actor.id, actorType: result.actor.type });
     return res.status(200).json(result);
   };
+
+  getMe = async (req, res) => {
+    const { sub: userId, type: userType } = req.auth;
+    logger.info('AUTH', 'GET ME REQUEST', { userId, userType });
+
+    const user = await this.authService.getMe(userId, userType);
+    logger.info('AUTH', 'GET ME SUCCESS', { userId, userType });
+    return res.status(200).json(user);
+  };
 }

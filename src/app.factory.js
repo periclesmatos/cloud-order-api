@@ -38,13 +38,7 @@ export function createDependencies() {
   const orderController = new OrderController(orderService);
 
   const userRepository = new UserDynamoDBRepository();
-  const authService = new AuthService(
-    userRepository,
-    customerRepository,
-    uuidGenerator,
-    passwordHasher,
-    tokenService,
-  );
+  const authService = new AuthService(userRepository, customerRepository, uuidGenerator, passwordHasher, tokenService);
   const authController = new AuthController(authService);
 
   return {
@@ -60,11 +54,7 @@ export function createApp(dependencies = createDependencies()) {
 
   // CORS middleware
   app.use((req, res, next) => {
-    const allowedOrigins = [
-      'http://localhost:5173',
-      'http://localhost:3000',
-      process.env.FRONTEND_URL,
-    ].filter(Boolean);
+    const allowedOrigins = ['http://localhost:5173', 'http://localhost:3000', process.env.FRONTEND_URL].filter(Boolean);
 
     const origin = req.headers.origin;
     if (allowedOrigins.includes(origin)) {
