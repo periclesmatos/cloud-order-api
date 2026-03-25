@@ -298,13 +298,37 @@ describe('Integracao HTTP - Pedidos', () => {
     expect(response.body.error).toBe('Pedido enviado ou concluído não pode ser cancelado');
   });
 
-  it('deve retornar 403 ao tentar atualizar status com token de cliente (caso de erro)', async () => {
+  it('deve retornar 403 ao tentar atualizar status com token de cliente para status diferente de CANCELED (caso de erro)', async () => {
+    serviceMock.getOrderById.mockResolvedValue({
+      id: 'ord-1',
+      customerId: 'cust-1',
+      status: 'CREATED',
+      items: [],
+    });
+
     const response = await request(app)
       .patch('/orders/ord-1/status')
       .set('Authorization', `Bearer ${customerToken}`)
       .send({ status: 'SENT' });
 
     expect(response.status).toBe(403);
-    expect(response.body.error).toBe('Apenas usuários administradores podem acessar este recurso');
+    expect(response.body.error).toBe('Clientes só podem cancelar pedidos');
+  });
+
+  it('deve retornar 403 ao cliente tentar cancelar pedido com status diferente de CREATED (caso de erro)', async () => {
+    serviceMock.getOrderById.mockResolvedValue({
+      id: 'ord-sent',
+      customerId: 'cust-1',
+      status: 'SENT',
+      items: [],
+    });
+
+    const response = await request(app)
+      .patch('/orders/ord-sent/status')
+      .set('Authorization', `Bearer ${customerToken}`)
+      .send({ status: 'CANCELED' });
+
+    expect(response.status).toBe(403);
+    expect(response.body.error).toBe('Apenas pedidos criados podem ser cancelados por clientes');
   });
 });
