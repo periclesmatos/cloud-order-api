@@ -934,7 +934,7 @@ export const swaggerSpec = {
     '/orders/{id}/status': {
       patch: {
         tags: ['Orders'],
-        summary: 'Atualiza status do pedido',
+        summary: 'Atualiza status do pedido (admin: qualquer status | cliente: cancelar apenas CREATED)',
         security: [{ bearerAuth: [] }],
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
         requestBody: {
@@ -956,6 +956,14 @@ export const swaggerSpec = {
           },
           400: {
             description: 'Erro de validacao',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+          403: {
+            description: 'Sem permiss\u00e3o (cliente pode cancelar s\u00f3 pedidos CREATED)',
             content: {
               'application/json': {
                 schema: { $ref: '#/components/schemas/Error' },
