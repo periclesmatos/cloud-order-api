@@ -107,4 +107,35 @@ export class AuthService {
       expiresIn: 3600,
     };
   }
+
+  async getMe(userId, userType) {
+    if (userType === 'USER') {
+      const user = await this.userRepository.findById(userId);
+      if (!user) {
+        throw new UnauthorizedError('Usuário não encontrado');
+      }
+      return {
+        id: user.id,
+        type: 'USER',
+        name: user.name,
+        email: user.email.toString(),
+        role: user.role,
+      };
+    }
+
+    if (userType === 'CUSTOMER') {
+      const customer = await this.customerRepository.findById(userId);
+      if (!customer) {
+        throw new UnauthorizedError('Cliente não encontrado');
+      }
+      return {
+        id: customer.id,
+        type: 'CUSTOMER',
+        name: customer.name,
+        phone: customer.phone.toString(),
+      };
+    }
+
+    throw new UnauthorizedError('Tipo de usuário inválido');
+  }
 }
