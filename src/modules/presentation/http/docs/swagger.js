@@ -335,6 +335,39 @@ export const swaggerSpec = {
         },
       },
     },
+    '/customers/me': {
+      get: {
+        tags: ['Customers'],
+        summary: 'Busca dados do cliente autenticado',
+        security: [{ bearerAuth: [] }],
+        responses: {
+          200: {
+            description: 'Dados do cliente',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Customer' },
+              },
+            },
+          },
+          401: {
+            description: 'Não autenticado',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+          403: {
+            description: 'Apenas clientes podem acessar',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+    },
     '/customers/{id}': {
       get: {
         tags: ['Customers'],
@@ -718,6 +751,62 @@ export const swaggerSpec = {
           },
           400: {
             description: 'Erro de validacao',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/orders/me': {
+      get: {
+        tags: ['Orders'],
+        summary: 'Lista pedidos do cliente autenticado',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'status',
+            in: 'query',
+            schema: { type: 'string', enum: ['CREATED', 'SENT', 'COMPLETED', 'CANCELED'] },
+            description: 'Filtrar por status',
+          },
+          {
+            name: 'dateFrom',
+            in: 'query',
+            schema: { type: 'string', format: 'date' },
+            description: 'Data inicial (YYYY-MM-DD)',
+          },
+          {
+            name: 'dateTo',
+            in: 'query',
+            schema: { type: 'string', format: 'date' },
+            description: 'Data final (YYYY-MM-DD)',
+          },
+        ],
+        responses: {
+          200: {
+            description: 'Lista de pedidos',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'array',
+                  items: { $ref: '#/components/schemas/Order' },
+                },
+              },
+            },
+          },
+          401: {
+            description: 'Não autenticado',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+          403: {
+            description: 'Apenas clientes podem acessar',
             content: {
               'application/json': {
                 schema: { $ref: '#/components/schemas/Error' },
