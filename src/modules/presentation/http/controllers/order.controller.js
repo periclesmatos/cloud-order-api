@@ -113,7 +113,29 @@ export class OrderController {
   updateStatus = async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
+    const auth = req.auth;
+    
     logger.info('ORDER', 'UPDATE STATUS REQUEST', { id, status });
+
+    // Se é cliente, aplica regras específicas
+    if (auth?.type === 'CUSTOMER') {
+      const order = await this.orderService.getOrderById(id);
+      
+      // Verifica se é dono do pedido
+      if (order.customerId !== auth.sub) {
+        throw new ForbiddenError('Você não pode atualizar pedido de outro cliente');
+      }
+
+      // Cliente só pode cancelar pedidos em status CREATED
+      if (status === 'CANCELED' && order.status !== 'CREATED') {
+        throw new ForbiddenError('Apenas pedidos criados podem ser cancelados por clientes');
+      }
+
+      // Cliente só pode cancelar, nenhum outro status
+      if (status !== 'CANCELED') {
+        throw new ForbiddenError('Clientes só podem cancelar pedidos');
+      }
+    }
 
     const order = await this.orderService.updateOrderStatus(id, status);
     const response = toHttpOrder(order);
