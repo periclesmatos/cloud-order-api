@@ -88,6 +88,28 @@ export class OrderController {
     return res.status(200).json(response);
   };
 
+  getMe = async (req, res) => {
+    const { sub: customerId } = req.auth;
+    const filters = parseOrderFilters(req.query);
+    logger.info('ORDER', 'GET ME REQUEST', { customerId, ...filters });
+
+    const orders = await this.orderService.listOrdersByCustomer(customerId, filters);
+    const response = orders.map(toHttpOrder);
+    logger.info('ORDER', 'GET ME SUCCESS', { customerId, count: response.length });
+    return res.status(200).json(response);
+  };
+
+  getMe = async (req, res) => {
+    const { sub: customerId } = req.auth;
+    const filters = parseOrderFilters(req.query);
+    logger.info('ORDER', 'GET ME REQUEST', { customerId, ...filters });
+
+    const orders = await this.orderService.listOrdersByCustomer(customerId, filters);
+    const response = orders.map(toHttpOrder);
+    logger.info('ORDER', 'GET ME SUCCESS', { customerId, count: response.length });
+    return res.status(200).json(response);
+  };
+
   updateStatus = async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
