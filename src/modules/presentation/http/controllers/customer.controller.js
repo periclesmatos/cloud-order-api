@@ -34,7 +34,6 @@ export class CustomerController {
     return res.status(200).json(response);
   };
 
-
   getByPhone = async (req, res) => {
     const phone = req.params.phone;
     logger.info('CUSTOMER', 'GET BY PHONE REQUEST', { phone });
@@ -50,6 +49,21 @@ export class CustomerController {
 
     const response = toHttpCustomer(customer);
     logger.info('CUSTOMER', 'GET BY PHONE SUCCESS', { phone, response });
+
+    return res.status(200).json(response);
+  };
+
+  getMe = async (req, res) => {
+    const { sub: customerId } = req.auth;
+    logger.info('CUSTOMER', 'GET ME REQUEST', { customerId });
+
+    const customer = await this.customerService.getCustomerById(customerId);
+    if (!customer) {
+      throw new NotFoundError('Cliente não encontrado');
+    }
+
+    const response = toHttpCustomer(customer);
+    logger.info('CUSTOMER', 'GET ME SUCCESS', { customerId, response });
 
     return res.status(200).json(response);
   };

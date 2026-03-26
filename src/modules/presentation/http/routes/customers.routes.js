@@ -1,11 +1,12 @@
 import { Router } from 'express';
-import { requireCustomerOwnerOrUser } from '../middlewares/auth.js';
+import { requireCustomerOwnerOrUser, requireCustomer } from '../middlewares/auth.js';
 
 export function createCustomersRouter(customerController) {
   const router = Router();
 
   router.post('/', customerController.create);
   router.get('/phone/:phone', customerController.getByPhone);
+  router.get('/me', requireCustomer, customerController.getMe);
   router.get('/:id', requireCustomerOwnerOrUser('id'), customerController.getById);
   router.put('/:id', requireCustomerOwnerOrUser('id'), customerController.update);
   router.delete('/:id', requireCustomerOwnerOrUser('id'), customerController.delete);
