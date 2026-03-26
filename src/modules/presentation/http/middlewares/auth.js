@@ -59,3 +59,15 @@ export function requireCustomerOwnerOrUser(paramName = 'id') {
     }
   };
 }
+
+export function requireCustomer(req, res, next) {
+  try {
+    const auth = ensureAuthenticatedPayload(req);
+    if (auth.type !== 'CUSTOMER') {
+      throw new ForbiddenError('Apenas clientes podem acessar este recurso');
+    }
+    return next();
+  } catch (error) {
+    return next(error);
+  }
+}

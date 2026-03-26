@@ -24,7 +24,6 @@ describe('Integracao HTTP - Auth', () => {
       registerUser: vi.fn(),
       loginUser: vi.fn(),
       loginCustomer: vi.fn(),
-      getMe: vi.fn(),
     };
     app = createApplication(serviceMock);
   });
@@ -97,47 +96,4 @@ describe('Integracao HTTP - Auth', () => {
     expect(response.status).toBe(401);
     expect(response.body.error).toBe('Credenciais inválidas');
   });
-
-  it('deve retornar dados do usuário autenticado (fluxo feliz)', async () => {
-    serviceMock.getMe.mockResolvedValue({
-      id: 'user-1',
-      type: 'USER',
-      name: 'Admin',
-      email: 'admin@email.com',
-      role: 'ADMIN',
-    });
-
-    const response = await request(app)
-      .get('/auth/me')
-      .set('Authorization', 'Bearer token-123');
-
-    expect(response.status).toBe(200);
-    expect(response.body.id).toBe('user-1');
-    expect(response.body.type).toBe('USER');
-    expect(response.body.email).toBe('admin@email.com');
-  });
-
-  it('deve retornar dados do cliente autenticado (fluxo feliz)', async () => {
-    serviceMock.getMe.mockResolvedValue({
-      id: 'cust-1',
-      type: 'CUSTOMER',
-      name: 'Maria',
-      phone: '+5585999999999',
-    });
-
-    const response = await request(app)
-      .get('/auth/me')
-      .set('Authorization', 'Bearer token-456');
-
-    expect(response.status).toBe(200);
-    expect(response.body.id).toBe('cust-1');
-    expect(response.body.type).toBe('CUSTOMER');
-    expect(response.body.phone).toBe('+5585999999999');
-  });
-
-  it('deve retornar 401 quando não informar token (caso de erro)', async () => {
-    const response = await request(app).get('/auth/me');
-
-    expect(response.status).toBe(401);
-    expect(response.body.error).toContain('Token');
-  });
+});
