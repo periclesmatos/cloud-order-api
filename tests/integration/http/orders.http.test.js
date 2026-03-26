@@ -100,9 +100,7 @@ describe('Integracao HTTP - Pedidos', () => {
       },
     ]);
 
-    const response = await request(app)
-      .get('/orders?customerId=cust-1')
-      .set('Authorization', `Bearer ${userToken}`);
+    const response = await request(app).get('/orders?customerId=cust-1').set('Authorization', `Bearer ${userToken}`);
 
     expect(response.status).toBe(200);
     expect(serviceMock.listOrders).toHaveBeenCalledWith({
@@ -145,9 +143,7 @@ describe('Integracao HTTP - Pedidos', () => {
       },
     ]);
 
-    const response = await request(app)
-      .get('/orders/customer/cust-9')
-      .set('Authorization', `Bearer ${userToken}`);
+    const response = await request(app).get('/orders/customer/cust-9').set('Authorization', `Bearer ${userToken}`);
 
     expect(response.status).toBe(200);
     expect(response.body[0].items).toHaveLength(1);
@@ -234,10 +230,7 @@ describe('Integracao HTTP - Pedidos', () => {
       getTotalItems: () => 1,
     });
 
-    const response = await request(app)
-      .patch('/orders/ord-1/status')
-      .set('Authorization', `Bearer ${userToken}`)
-      .send({ status: 'SENT' });
+    const response = await request(app).patch('/orders/ord-1/status').set('Authorization', `Bearer ${userToken}`).send({ status: 'SENT' });
 
     expect(response.status).toBe(200);
     expect(response.body.status).toBe('SENT');
@@ -285,9 +278,7 @@ describe('Integracao HTTP - Pedidos', () => {
   });
 
   it('deve retornar 400 ao tentar cancelar pedido enviado (caso de erro)', async () => {
-    serviceMock.updateOrderStatus.mockRejectedValue(
-      new ValidationError('Pedido enviado ou concluído não pode ser cancelado'),
-    );
+    serviceMock.updateOrderStatus.mockRejectedValue(new ValidationError('Pedido enviado ou concluído não pode ser cancelado'));
 
     const response = await request(app)
       .patch('/orders/ord-1/status')

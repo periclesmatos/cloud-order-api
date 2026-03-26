@@ -34,7 +34,6 @@ export class CustomerController {
     return res.status(200).json(response);
   };
 
-
   getByPhone = async (req, res) => {
     const phone = req.params.phone;
     logger.info('CUSTOMER', 'GET BY PHONE REQUEST', { phone });
