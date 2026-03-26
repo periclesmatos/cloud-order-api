@@ -174,6 +174,17 @@ export const swaggerSpec = {
           expiresIn: { type: 'integer', example: 3600 },
         },
       },
+      MeResponse: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', example: 'usr-1' },
+          type: { type: 'string', enum: ['USER', 'CUSTOMER'] },
+          name: { type: 'string', example: 'Administrador' },
+          email: { type: 'string', format: 'email', example: 'admin@email.com', nullable: true },
+          role: { type: 'string', example: 'ADMIN', nullable: true },
+          phone: { type: 'string', example: '85999999999', nullable: true },
+        },
+      },
       OrderItemInput: {
         type: 'object',
         required: ['productId', 'quantity'],
@@ -315,6 +326,39 @@ export const swaggerSpec = {
           },
           400: {
             description: 'Erro de validacao',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/customers/me': {
+      get: {
+        tags: ['Customers'],
+        summary: 'Busca dados do cliente autenticado',
+        security: [{ bearerAuth: [] }],
+        responses: {
+          200: {
+            description: 'Dados do cliente',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Customer' },
+              },
+            },
+          },
+          401: {
+            description: 'Não autenticado',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+          403: {
+            description: 'Apenas clientes podem acessar',
             content: {
               'application/json': {
                 schema: { $ref: '#/components/schemas/Error' },
@@ -471,10 +515,7 @@ export const swaggerSpec = {
         tags: ['Addresses'],
         summary: 'Atualiza endereco do cliente',
         security: [{ bearerAuth: [] }],
-        parameters: [
-          { $ref: '#/components/parameters/customerId' },
-          { $ref: '#/components/parameters/addressId' },
-        ],
+        parameters: [{ $ref: '#/components/parameters/customerId' }, { $ref: '#/components/parameters/addressId' }],
         requestBody: {
           required: true,
           content: {
@@ -514,10 +555,7 @@ export const swaggerSpec = {
         tags: ['Addresses'],
         summary: 'Remove endereco do cliente',
         security: [{ bearerAuth: [] }],
-        parameters: [
-          { $ref: '#/components/parameters/customerId' },
-          { $ref: '#/components/parameters/addressId' },
-        ],
+        parameters: [{ $ref: '#/components/parameters/customerId' }, { $ref: '#/components/parameters/addressId' }],
         responses: {
           204: { description: 'Endereco removido' },
           404: {
@@ -722,6 +760,62 @@ export const swaggerSpec = {
         },
       },
     },
+    '/orders/me': {
+      get: {
+        tags: ['Orders'],
+        summary: 'Lista pedidos do cliente autenticado',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'status',
+            in: 'query',
+            schema: { type: 'string', enum: ['CREATED', 'SENT', 'COMPLETED', 'CANCELED'] },
+            description: 'Filtrar por status',
+          },
+          {
+            name: 'dateFrom',
+            in: 'query',
+            schema: { type: 'string', format: 'date' },
+            description: 'Data inicial (YYYY-MM-DD)',
+          },
+          {
+            name: 'dateTo',
+            in: 'query',
+            schema: { type: 'string', format: 'date' },
+            description: 'Data final (YYYY-MM-DD)',
+          },
+        ],
+        responses: {
+          200: {
+            description: 'Lista de pedidos',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'array',
+                  items: { $ref: '#/components/schemas/Order' },
+                },
+              },
+            },
+          },
+          401: {
+            description: 'Não autenticado',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+          403: {
+            description: 'Apenas clientes podem acessar',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+    },
     '/orders': {
       post: {
         tags: ['Orders'],
@@ -840,7 +934,7 @@ export const swaggerSpec = {
     '/orders/{id}/status': {
       patch: {
         tags: ['Orders'],
-        summary: 'Atualiza status do pedido',
+        summary: 'Atualiza status do pedido (admin: qualquer status | cliente: cancelar apenas CREATED)',
         security: [{ bearerAuth: [] }],
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
         requestBody: {
@@ -862,6 +956,14 @@ export const swaggerSpec = {
           },
           400: {
             description: 'Erro de validacao',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+          403: {
+            description: 'Sem permiss\u00e3o (cliente pode cancelar s\u00f3 pedidos CREATED)',
             content: {
               'application/json': {
                 schema: { $ref: '#/components/schemas/Error' },
@@ -1015,6 +1117,31 @@ export const swaggerSpec = {
           },
           401: {
             description: 'Credenciais inválidas',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/auth/me': {
+      get: {
+        tags: ['Auth'],
+        summary: 'Busca dados do usuário autenticado',
+        security: [{ bearerAuth: [] }],
+        responses: {
+          200: {
+            description: 'Dados do usuário',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/MeResponse' },
+              },
+            },
+          },
+          401: {
+            description: 'Não autenticado',
             content: {
               'application/json': {
                 schema: { $ref: '#/components/schemas/Error' },
