@@ -1,0 +1,30 @@
+name: CI Production PR
+
+on:
+  pull_request:
+    branches:
+      - production
+
+jobs:
+  ci:
+    name: CI (build + tests)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Build do back-end (Docker)
+        run: docker build -t cloud-order-api:ci .
+
+      - name: Rodar testes
+        run: npm run test
