@@ -1,4 +1,5 @@
 import express from 'express';
+import rateLimit from 'express-rate-limit';
 import swaggerUi from 'swagger-ui-express';
 
 import { UuidGenerator } from './modules/shared/providers/uuid-generator.js';
@@ -50,6 +51,39 @@ export function createDependencies() {
 }
 
 export function createApp(dependencies = createDependencies()) {
+  const parsePositiveInteger = (value, fallback) => {
+    const parsed = Number.parseInt(value ?? '', 10);
+    return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+  };
+
+  const rateLimitWindowMs = parsePositiveInteger(process.env.RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000);
+  const rateLimitMax = parsePositiveInteger(process.env.RATE_LIMIT_MAX, 100);
+  const authRateLimitWindowMs = parsePositiveInteger(
+    process.env.AUTH_RATE_LIMIT_WINDOW_MS,
+    15 * 60 * 1000,
+  );
+  const authRateLimitMax = parsePositiveInteger(process.env.AUTH_RATE_LIMIT_MAX, 10);
+
+  const globalRateLimiter = rateLimit({
+    windowMs: rateLimitWindowMs,
+    max: rateLimitMax,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+      message: 'Too many requests. Please try again later.',
+    },
+  });
+
+  const authRateLimiter = rateLimit({
+    windowMs: authRateLimitWindowMs,
+    max: authRateLimitMax,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+      message: 'Too many authentication attempts. Please try again later.',
+    },
+  });
+
   const app = express();
 
   // CORS middleware
@@ -81,6 +115,8 @@ export function createApp(dependencies = createDependencies()) {
   });
 
   app.use(express.json());
+  app.use(globalRateLimiter);
+  app.use('/auth', authRateLimiter);
   app.use('/', swaggerUi.serve);
   app.get('/', swaggerUi.setup(swaggerSpec));
   app.use(createHttpRoutes(dependencies));
