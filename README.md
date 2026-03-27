@@ -125,4 +125,4 @@ npm test
 
 ## 👨‍💻 Autor
 
-Desenvolvido por [Seu Nome].
+Desenvolvido por Pericles Matos.
