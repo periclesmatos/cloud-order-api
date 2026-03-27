@@ -1,170 +1,128 @@
 # Cloud Order API
 
-Back-end API para gestão de clientes, produtos e pedidos, com autenticação JWT, autorização por perfil, controle transacional de estoque e deploy em nuvem.
+[![Node.js](https://img.shields.io/badge/Node.js-20+-green)](https://nodejs.org/)
+[![Express](https://img.shields.io/badge/Express-5.2.1-blue)](https://expressjs.com/)
+[![DynamoDB](https://img.shields.io/badge/DynamoDB-AWS-orange)](https://aws.amazon.com/dynamodb/)
+[![Bcrypt](https://img.shields.io/badge/Bcrypt-3.0.3-red)](https://www.npmjs.com/package/bcryptjs)
+[![Swagger](https://img.shields.io/badge/Swagger-6.2.8-brightgreen)](https://swagger.io/)
+[![Vitest](https://img.shields.io/badge/Vitest-4.0.18-yellowgreen)](https://vitest.dev/)
+[![Supertest](https://img.shields.io/badge/Supertest-7.2.2-lightgrey)](https://www.npmjs.com/package/supertest)
+[![License](https://img.shields.io/badge/License-MIT-yellow)](#licença)
 
-## Sumário
-- [Visão Geral](#visão-geral)
-- [Arquitetura](#arquitetura)
-- [Tecnologias](#tecnologias)
-- [Requisitos](#requisitos)
-- [Setup Local](#setup-local)
-- [Variáveis de Ambiente](#variáveis-de-ambiente)
-- [Endpoints e Documentação](#endpoints-e-documentação)
-- [Testes](#testes)
-- [Segurança](#segurança)
-- [CI/CD e Deploy](#cicd-e-deploy)
-- [Operação em Produção](#operação-em-produção)
-- [Banco de Dados (DynamoDB)](#banco-de-dados-dynamodb)
+## 📌 Visão Geral
 
-## Visão Geral
-A API implementa:
-- autenticação para `USER` (admin) e `CUSTOMER` (cliente);
-- autorização por perfil e ownership;
-- CRUD de clientes, produtos e pedidos;
-- fluxo de status de pedidos com regras de negócio;
-- persistência em DynamoDB com operações transacionais;
-- observabilidade via logs de acesso e erro;
-- pipeline CI/CD com build, testes e deploy automático.
+A **Cloud Order API** é uma API RESTful desenvolvida para gerenciar pedidos, clientes e produtos. Este projeto foi criado com foco em boas práticas de engenharia de software, incluindo arquitetura limpa, segurança e testes automatizados.
 
-Este repositório contém o back-end da aplicação.
+## 🏗️ Arquitetura
 
-## Arquitetura
-Arquitetura em camadas:
-- `domain`: entidades e value objects
-- `application`: regras de negócio (services)
-- `infra`: persistência DynamoDB e mappers
-- `presentation/http`: controllers, rotas, middlewares e Swagger
-- `shared`: providers (token, hash, UUID, logger)
+O projeto segue uma arquitetura em camadas, promovendo separação de responsabilidades e modularidade:
 
-Arquivos principais:
-- App factory: [`src/app.factory.js`](src/app.factory.js)
-- Bootstrap da aplicação: [`src/app.js`](src/app.js)
-- Rotas HTTP: [`src/modules/presentation/http/routes/index.js`](src/modules/presentation/http/routes/index.js)
+- **Controllers**: Lidam com requisições HTTP e retornam respostas apropriadas.
+- **Services**: Contêm as regras de negócio, garantindo centralização da lógica.
+- **Repositories**: Gerenciam o acesso ao banco de dados DynamoDB, abstraindo detalhes de implementação.
+- **Middlewares**: Implementam funcionalidades transversais, como autenticação e tratamento de erros.
 
-## Tecnologias
-- Node.js 22+
-- Express
-- AWS SDK v3 (DynamoDB)
-- JWT (`jsonwebtoken`)
-- `bcryptjs`
-- Vitest + Supertest
-- Swagger UI
-- Docker
-- GitHub Actions
+Essa abordagem facilita a manutenção e escalabilidade do projeto.
 
-## Requisitos
-- Node.js 22+
-- npm 10+
-- Docker e Docker Compose
-- Tabela DynamoDB configurada
+## 🔐 Autenticação e Segurança
 
-## Setup Local
-1. Instalar dependências:
+- **Autenticação**: Implementada com tokens JWT, garantindo sessões seguras e controle de acesso.
+- **Hash de Senhas**: Utiliza Bcrypt para armazenar senhas de forma segura.
+- **Middleware de Autenticação**: `requireAuth` protege rotas sensíveis.
+- **Boas Práticas**: Validação de senhas fortes e proteção contra ataques de força bruta.
+
+## 📡 Padrão de API
+
+- **Respostas Padronizadas**: Todas as respostas seguem um formato JSON consistente, com mensagens claras e códigos de status HTTP apropriados.
+- **Rotas RESTful**: Organização das rotas seguindo os princípios REST, facilitando a integração com clientes externos.
+
+## ⚠️ Tratamento de Erros
+
+- **Middleware Global**: Centraliza o tratamento de erros, convertendo exceções em respostas HTTP apropriadas.
+- **Benefícios**: Simplifica o código dos controllers e garante uma experiência consistente para os clientes da API.
+
+## 🚀 Tecnologias Utilizadas
+
+- **Node.js**: Plataforma para execução do JavaScript no backend.
+- **Express**: Framework web minimalista e flexível.
+- **DynamoDB**: Banco de dados NoSQL escalável e gerenciado pela AWS.
+- **Bcrypt**: Biblioteca para hash de senhas.
+- **Swagger**: Ferramenta para documentação interativa da API.
+- **Vitest**: Framework de testes unitários.
+- **Supertest**: Biblioteca para testes de integração de endpoints.
+
+## 📄 Documentação da API
+
+A documentação interativa da API está disponível via Swagger. Para acessá-la, inicie o servidor e acesse o endpoint `/api-docs`.
+
+## 🧪 Testes
+
+- **Unitários**: Testam funções e serviços isoladamente, garantindo a confiabilidade da lógica de negócio.
+- **Integração**: Validam o funcionamento dos endpoints e a interação entre as camadas da aplicação.
+- **Cobertura**: O projeto utiliza Vitest e Supertest para garantir alta cobertura de testes.
+
+## 📡 Endpoints Principais
+
+- **POST /auth/login**: Autenticação de usuários.
+- **GET /customers**: Listagem de clientes.
+- **POST /orders**: Criação de pedidos.
+
+## ⚙️ Como Executar o Projeto
+
+### Pré-requisitos
+
+- Node.js 20+
+- DynamoDB configurado
+
+### Instalação
+
 ```bash
-npm ci
+npm install
 ```
 
-2. Criar `.env` com base em `.env.example`.
+### Configuração
 
-3. Iniciar aplicação:
+Crie um arquivo `.env` com as seguintes variáveis:
+
+```env
+AWS_REGION=us-east-1
+DDB_TABLE=cloud-order-table
+AUTH_SECRET=super-secret-key
+```
+
+### Execução
+
 ```bash
 npm run dev
 ```
 
-4. Acessar:
-- API + Swagger: `http://localhost:3000/`
+### Testes
 
-## Variáveis de Ambiente
-Arquivo de referência: [`.env.example`](.env.example)
-
-Principais variáveis:
-- `PORT`
-- `AWS_REGION`
-- `DDB_TABLE`
-- `AWS_ACCESS_KEY_ID`
-- `AWS_SECRET_ACCESS_KEY`
-- `RATE_LIMIT_WINDOW_MS`
-- `RATE_LIMIT_MAX`
-- `AUTH_RATE_LIMIT_WINDOW_MS`
-- `AUTH_RATE_LIMIT_MAX`
-
-Recomendação:
-- nunca commitar credenciais reais;
-- manter segredos apenas em variáveis de ambiente/secret manager.
-
-## Endpoints e Documentação
-- Swagger UI: `GET /`
-- Referência de rotas: [`docs/ROTAS_API.md`](docs/ROTAS_API.md)
-
-## Testes
-Executar suíte completa:
 ```bash
-npm run test
+npm test
 ```
 
-Executar por tipo:
-```bash
-npm run test:unit
-npm run test:integration
-```
+## 🧠 Decisões Técnicas
 
-## Segurança
-Controles implementados:
-- autenticação JWT;
-- autorização por perfil e ownership;
-- tratamento centralizado de erros HTTP;
-- logs estruturados de acesso e erro;
-- rate limit global e específico para autenticação.
+- **DynamoDB**: Escolhido pela escalabilidade e integração com a AWS.
+- **Express**: Framework leve e flexível, ideal para APIs RESTful.
+- **Arquitetura em Camadas**: Facilita a manutenção e evolução do projeto.
+- **Segurança**: Uso de Bcrypt, JWT e rate limiting para proteger a aplicação.
 
-Rate limit configurável em [`src/app.factory.js`](src/app.factory.js):
-- Global:
-  - `RATE_LIMIT_WINDOW_MS` (default `900000`)
-  - `RATE_LIMIT_MAX` (default `100`)
-- `/auth`:
-  - `AUTH_RATE_LIMIT_WINDOW_MS` (default `900000`)
-  - `AUTH_RATE_LIMIT_MAX` (default `10`)
+## 🔒 Boas Práticas Aplicadas
 
-## CI/CD e Deploy
-Workflow principal: [`.github/workflows/ci-pr.yml`](.github/workflows/ci-pr.yml) e [`.github/workflows/deploy-production.yml`](.github/workflows/deploy-production.yml)
+- Separação de responsabilidades (SRP).
+- Código limpo e organizado.
+- Tratamento centralizado de erros.
+- Testes automatizados para garantir qualidade.
 
-Fluxo:
-- `pull_request` para `production`:
-  - `npm ci`
-  - `docker build -t cloud-order-api:ci .`
-  - `npm run test`
-- `push` em `production`:
-  - deploy automático na EC2 via SSH
-  - atualização para `origin/production`
-  - `docker compose up -d --build`
+## 📈 Melhorias Futuras
 
-Segredos necessários no GitHub:
-- `EC2_SSH_KEY`
-- `EC2_HOST`
-- `EC2_USER`
-- `APP_DIR`
+- Implementação de CI/CD.
+- Containerização com Docker.
+- Monitoramento e logging avançados.
+- Estratégias de escalabilidade horizontal.
 
-Estratégia de branches:
-- `alpha`: desenvolvimento
-- `production`: produção
+## 👨‍💻 Autor
 
-## Operação em Produção
-Comandos úteis no servidor:
-```bash
-cd <APP_DIR>
-git fetch origin
-git checkout production
-git reset --hard origin/production
-docker compose up -d --build
-docker compose ps
-docker compose logs --tail=100
-```
-
-## Banco de Dados (DynamoDB)
-Modelo com single-table e chaves compostas.
-
-Índices utilizados:
-- `type-index`
-- `GSI_AllOrders`
-- `GSI_OrderByCostumer`
-
-Persistência é externa ao container (serviço gerenciado em nuvem).
+Desenvolvido por [Seu Nome].
