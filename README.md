@@ -7,6 +7,8 @@
 [![Swagger](https://img.shields.io/badge/Swagger-6.2.8-brightgreen)](https://swagger.io/)
 [![Vitest](https://img.shields.io/badge/Vitest-4.0.18-yellowgreen)](https://vitest.dev/)
 [![Supertest](https://img.shields.io/badge/Supertest-7.2.2-lightgrey)](https://www.npmjs.com/package/supertest)
+[![Docker](https://img.shields.io/badge/Docker-Containerization-blue)](https://www.docker.com/)
+[![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-CI%2FCD-blue)](https://github.com/features/actions)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](#licença)
 
 ## 📌 Visão Geral
@@ -50,6 +52,8 @@ Essa abordagem facilita a manutenção e escalabilidade do projeto.
 - **Swagger**: Ferramenta para documentação interativa da API.
 - **Vitest**: Framework de testes unitários.
 - **Supertest**: Biblioteca para testes de integração de endpoints.
+- **Docker**: Utilizado para containerização da aplicação, com suporte a Docker Compose.
+- **GitHub Actions**: Configurado para CI/CD, incluindo testes automatizados e deploy na produção.
 
 ## 📄 Documentação da API
 
@@ -118,9 +122,8 @@ npm test
 
 ## 📈 Melhorias Futuras
 
-- Implementação de CI/CD.
-- Containerização com Docker.
-- Monitoramento e logging avançados.
+- Persistência de logs (ex.: integração com ELK, CloudWatch).
+- Monitoramento avançado (ex.: Prometheus, Grafana).
 - Estratégias de escalabilidade horizontal.
 
 ## 👨‍💻 Autor
