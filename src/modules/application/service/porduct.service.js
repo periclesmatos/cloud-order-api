@@ -9,9 +9,9 @@ export class ProductService {
   }
 
   async createProduct(product_data) {
-    const { name, price, amount } = product_data;
+    const { name, price, amount, description } = product_data;
     const id = this.uuidGenerator.generate();
-    const product = Product.create({ id, name, price, amount });
+    const product = Product.create({ id, name, price, amount, description });
     const savedProduct = await this.productRepository.saveProduct(product);
     return savedProduct;
   }
@@ -37,11 +37,12 @@ export class ProductService {
       throw new NotFoundError('Produto não encontrado');
     }
 
-    const { name, price, amount } = update_data;
+    const { name, price, amount, description } = update_data;
 
     if (name !== undefined) product.changeName(name);
     if (price !== undefined) product.changePrice(price);
     if (amount !== undefined) product.changeAmount(amount);
+    if (description !== undefined) product.changeDescription(description);
 
     const updatedProduct = await this.productRepository.update(product);
     return updatedProduct;
