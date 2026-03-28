@@ -13,7 +13,6 @@ describe('Address', () => {
       city: 'Fortaleza',
       state: 'CE',
       postalCode: '60000-000',
-      country: 'BR',
       complement: 'Apto 1',
     });
 
@@ -38,7 +37,6 @@ describe('Address', () => {
         city: 'Fortaleza',
         state: 'CE',
         postalCode: '60000-000',
-        country: 'BR',
       }),
     ).toThrow(ValidationError);
   });
@@ -53,7 +51,6 @@ describe('Address', () => {
         city: 'Fortaleza',
         state: 'CE',
         postalCode: '60000-000',
-        country: 'BR',
       }),
     ).toThrow(ValidationError);
   });
@@ -68,7 +65,6 @@ describe('Address', () => {
       city: 'Fortaleza',
       state: 'CE',
       postalCode: '60000-000',
-      country: 'BR',
     });
 
     const withoutHyphen = Address.create({
@@ -79,7 +75,6 @@ describe('Address', () => {
       city: 'Fortaleza',
       state: 'CE',
       postalCode: '60000000',
-      country: 'BR',
     });
 
     // Act
@@ -102,7 +97,6 @@ describe('Address', () => {
         city: 'Fortaleza',
         state: 'CE',
         postalCode: '6000-000',
-        country: 'BR',
       }),
     ).toThrow(ValidationError);
   });

@@ -7,7 +7,6 @@ export function toHttpAddress(address) {
     city: address.city,
     state: address.state,
     postalCode: typeof address.postalCode === 'string' ? address.postalCode : address.postalCode?.toString?.(),
-    country: address.country,
     complement: address.complement,
     createdAt: address.createdAt,
   };
