@@ -39,6 +39,7 @@ describe('OrderDynamoDBRepository (unit)', () => {
       name: 'Mouse',
       price: 100,
       amount: 0,
+      description: 'Mouse para computador',
     });
     product.updatedAt = '2026-03-21T18:00:00.000Z';
 
@@ -177,13 +178,12 @@ describe('OrderDynamoDBRepository (unit)', () => {
       name: 'Mouse',
       price: 100,
       amount: 3,
+      description: 'Mouse para computador',
     });
     product.updatedAt = '2026-03-21T18:00:00.000Z';
 
     dynamodb.send.mockResolvedValue({});
-    await repository.updateStatus(order, 'CREATED', [
-      { product, expectedAmount: 2, expectedUpdatedAt: '2026-03-21T17:00:00.000Z' },
-    ]);
+    await repository.updateStatus(order, 'CREATED', [{ product, expectedAmount: 2, expectedUpdatedAt: '2026-03-21T17:00:00.000Z' }]);
 
     const input = dynamodb.send.mock.calls[0][0].input;
     expect(input.TransactItems[0].Put.ConditionExpression).toContain('#status = :previousStatus');
@@ -212,6 +212,7 @@ describe('OrderDynamoDBRepository (unit)', () => {
       name: 'Mouse',
       price: 100,
       amount: 0,
+      description: 'Mouse para computador',
     });
     product.updatedAt = '2026-03-21T18:00:00.000Z';
 
