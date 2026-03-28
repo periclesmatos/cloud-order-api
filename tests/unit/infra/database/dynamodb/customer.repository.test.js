@@ -40,7 +40,6 @@ describe('CustomerDynamoDBRepository (unit)', () => {
           city: 'Fortaleza',
           state: 'CE',
           postalCode: '60000-000',
-          country: 'BR',
           createdAt: '2026-02-28T00:00:00.000Z',
         },
         {
@@ -53,7 +52,6 @@ describe('CustomerDynamoDBRepository (unit)', () => {
           city: 'Fortaleza',
           state: 'CE',
           postalCode: '60100-000',
-          country: 'BR',
           createdAt: '2026-02-28T00:00:00.000Z',
         },
       ],
@@ -140,7 +138,6 @@ describe('CustomerDynamoDBRepository (unit)', () => {
       city: 'Fortaleza',
       state: 'CE',
       postalCode: '60000-000',
-      country: 'BR',
     });
 
     const customer = Customer.create({
@@ -221,7 +218,6 @@ describe('CustomerDynamoDBRepository (unit)', () => {
       city: 'Fortaleza',
       state: 'CE',
       postalCode: '60000-000',
-      country: 'BR',
     });
 
     dynamodb.send.mockRejectedValueOnce(transactionError);

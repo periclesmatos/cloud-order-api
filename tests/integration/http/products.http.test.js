@@ -42,18 +42,17 @@ describe('Integracao HTTP - Produtos', () => {
       name: 'Mouse Gamer',
       price: 120,
       amount: 8,
+      description: 'Mouse com DPI ajustável',
       isActive: true,
       createdAt: '2026-03-01T00:00:00.000Z',
     });
 
-    const response = await request(app)
-      .put('/products/prod-1')
-      .set('Authorization', `Bearer ${userToken}`)
-      .send({
-        name: 'Mouse Gamer',
-        price: 120,
-        amount: 8,
-      });
+    const response = await request(app).put('/products/prod-1').set('Authorization', `Bearer ${userToken}`).send({
+      name: 'Mouse Gamer',
+      price: 120,
+      amount: 8,
+      description: 'Mouse com DPI ajustável',
+    });
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
@@ -61,6 +60,7 @@ describe('Integracao HTTP - Produtos', () => {
       name: 'Mouse Gamer',
       price: 120,
       amount: 8,
+      description: 'Mouse com DPI ajustável',
       isActive: true,
       createdAt: '2026-03-01T00:00:00.000Z',
     });
@@ -81,6 +81,7 @@ describe('Integracao HTTP - Produtos', () => {
       name: 'Notebook',
       price: 3000,
       amount: 2,
+      description: 'Notebook com processador i7',
       isActive: true,
       createdAt: '2026-03-01T00:00:00.000Z',
     });
@@ -101,6 +102,7 @@ describe('Integracao HTTP - Produtos', () => {
       name: 'Notebook',
       price: 3000,
       amount: 2,
+      description: 'Notebook com processador i7',
       isActive: false,
       createdAt: '2026-03-01T00:00:00.000Z',
     });
@@ -134,6 +136,7 @@ describe('Integracao HTTP - Produtos', () => {
         name: 'Produto Ativo',
         price: 50,
         amount: 1,
+        description: 'Descrição do produto ativo',
         isActive: true,
         createdAt: '2026-03-01T00:00:00.000Z',
       },
@@ -154,6 +157,7 @@ describe('Integracao HTTP - Produtos', () => {
         name: 'Mouse',
         price: 120,
         amount: 10,
+        description: 'Mouse sem fio com USB',
         isActive: true,
         createdAt: '2026-03-01T00:00:00.000Z',
       },

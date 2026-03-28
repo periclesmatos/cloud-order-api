@@ -102,17 +102,19 @@ export const swaggerSpec = {
           name: { type: 'string', example: 'Teclado Mecanico' },
           price: { type: 'number', example: 299.9 },
           amount: { type: 'number', example: 10 },
+          description: { type: 'string', example: 'Teclado com teclas mecanicas RGB' },
           isActive: { type: 'boolean', example: true },
           createdAt: { type: 'string', format: 'date-time' },
         },
       },
       CreateProductInput: {
         type: 'object',
-        required: ['name', 'price', 'amount'],
+        required: ['name', 'price', 'amount', 'description'],
         properties: {
           name: { type: 'string', example: 'Teclado Mecanico' },
           price: { type: 'number', example: 299.9 },
           amount: { type: 'number', example: 10 },
+          description: { type: 'string', example: 'Teclado com teclas mecanicas RGB' },
         },
       },
       UpdateProductInput: {
@@ -121,6 +123,7 @@ export const swaggerSpec = {
           name: { type: 'string', example: 'Teclado Mecanico Pro' },
           price: { type: 'number', example: 349.9 },
           amount: { type: 'number', example: 8 },
+          description: { type: 'string', example: 'Teclado mecanico profissional com RGB personalizado' },
         },
       },
       ProductStatusInput: {
@@ -224,7 +227,6 @@ export const swaggerSpec = {
           city: { type: 'string', example: 'Fortaleza' },
           state: { type: 'string', example: 'CE' },
           postalCode: { type: 'string', example: '60000-000' },
-          country: { type: 'string', example: 'BR' },
           complement: { type: 'string', nullable: true, example: 'Apto 101' },
         },
       },

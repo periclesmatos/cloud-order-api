@@ -88,7 +88,6 @@ export class OrderService {
         state: address.state,
         postalCode:
           typeof address.postalCode === 'string' ? address.postalCode : address.postalCode.toString(),
-        country: address.country,
         complement: address.complement ?? null,
       },
       items: orderItems,

@@ -15,10 +15,10 @@ export class ProductController {
   }
 
   create = async (req, res) => {
-    const { name, price, amount } = req.body;
-    logger.info('PRODUCT', 'CREATE REQUEST', { name, price, amount });
+    const { name, price, amount, description } = req.body;
+    logger.info('PRODUCT', 'CREATE REQUEST', { name, price, amount, description });
 
-    const product = await this.productService.createProduct({ name, price, amount });
+    const product = await this.productService.createProduct({ name, price, amount, description });
     const response = toHttpProduct(product);
     logger.info('PRODUCT', 'CREATE SUCCESS', { response });
 
@@ -65,10 +65,10 @@ export class ProductController {
 
   update = async (req, res) => {
     const { id } = req.params;
-    const { name, price, amount } = req.body;
-    logger.info('PRODUCT', 'UPDATE REQUEST', { id, name, price, amount });
+    const { name, price, amount, description } = req.body;
+    logger.info('PRODUCT', 'UPDATE REQUEST', { id, name, price, amount, description });
 
-    const updatedProduct = await this.productService.updateProduct(id, { name, price, amount });
+    const updatedProduct = await this.productService.updateProduct(id, { name, price, amount, description });
     const response = toHttpProduct(updatedProduct);
     logger.info('PRODUCT', 'UPDATE SUCCESS', { id, response });
 

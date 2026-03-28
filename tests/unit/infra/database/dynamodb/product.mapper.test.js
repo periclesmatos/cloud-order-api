@@ -14,6 +14,7 @@ describe('ProductDynamoDBMapper (unit)', () => {
       name: '  Camiseta Premium  ',
       price: 49.9,
       amount: 5,
+      description: 'Camiseta de algodao premium',
     });
 
     const item = ProductDynamoDBMapper.toProductItem(product);
@@ -33,6 +34,7 @@ describe('ProductDynamoDBMapper (unit)', () => {
       productId: 'prod-2',
       name: 'Tenis',
       nameNormalized: 'tenis',
+      description: 'Tennis esportivo resistente',
       price: '12345',
       amount: '3',
       isActive: true,

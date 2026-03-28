@@ -28,7 +28,6 @@ export function toCustomerAddressItem(address) {
     city: address.city,
     state: address.state,
     postalCode: address.postalCode.toString(),
-    country: address.country,
     complement: address.complement,
     createdAt: address.createdAt,
   };
@@ -68,7 +67,6 @@ export function toDomainAddress(item) {
     city: item.city,
     state: item.state,
     postalCode: item.postalCode,
-    country: item.country,
     complement: item.complement,
     createdAt: item.createdAt,
   });
