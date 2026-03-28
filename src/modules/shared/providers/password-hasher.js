@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 
 export class PasswordHasher {
-  constructor(rounds = 12) {
+  constructor(rounds = process.env.NODE_ENV === 'test' ? 2 : 12) {
     this.rounds = rounds;
   }
 

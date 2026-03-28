@@ -10,6 +10,7 @@ describe('Product', () => {
       name: 'Camiseta',
       price: 49.9,
       amount: 10,
+      description: 'Camiseta de qualidade',
     });
 
     expect(product.price).toBeInstanceOf(Price);
@@ -22,6 +23,7 @@ describe('Product', () => {
       name: 'Camiseta',
       price: 49.9,
       amount: 10,
+      description: 'Camiseta de qualidade',
     });
 
     product.changePrice(50.555);
@@ -35,6 +37,7 @@ describe('Product', () => {
       name: 'Camiseta',
       price: 49.9,
       amount: 10,
+      description: 'Camiseta de qualidade',
     });
 
     expect(() => product.changePrice(-1)).toThrow(ValidationError);

@@ -3,7 +3,7 @@ import { PasswordHasher } from '../../../../src/modules/shared/providers/passwor
 
 describe('PasswordHasher (unit)', () => {
   it('deve gerar hash diferente da senha em texto puro (fluxo feliz)', () => {
-    const hasher = new PasswordHasher();
+    const hasher = new PasswordHasher(2);
     const hash = hasher.hash('A9!zT7#kL2');
 
     expect(hash).not.toBe('A9!zT7#kL2');
@@ -11,7 +11,7 @@ describe('PasswordHasher (unit)', () => {
   });
 
   it('deve validar senha correta e rejeitar senha incorreta (fluxo feliz)', () => {
-    const hasher = new PasswordHasher();
+    const hasher = new PasswordHasher(2);
     const hash = hasher.hash('A9!zT7#kL2');
 
     expect(hasher.compare('A9!zT7#kL2', hash)).toBe(true);

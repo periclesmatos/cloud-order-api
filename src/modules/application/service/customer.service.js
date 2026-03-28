@@ -107,7 +107,6 @@ export class CustomerService {
       city: update_data.city ?? existingAddress.city,
       state: update_data.state ?? existingAddress.state,
       postalCode: update_data.postalCode ?? existingAddress.postalCode,
-      country: update_data.country ?? existingAddress.country,
       complement: update_data.complement ?? existingAddress.complement,
       createdAt: existingAddress.createdAt,
     });
