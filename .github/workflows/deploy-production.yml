@@ -6,27 +6,58 @@ on:
       - production
 
 jobs:
+  # ============================================
+  # DEPLOY: Deploy na EC2
+  # ============================================
   deploy:
-    name: Deploy na EC2
+    name: 🚀 Deploy na EC2
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+
+    environment:
+      name: production
+      url: https://${{ secrets.EC2_HOST }}
 
     steps:
       - name: Checkout código
         uses: actions/checkout@v4
 
-      - name: Configurar SSH
+      - name: 🔐 Configurar SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
 
-      - name: Deploy na EC2
+      - name: 🚀 Deploy na EC2 (Git + Docker Compose)
         run: |
           ssh -i ~/.ssh/id_ed25519 ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
             set -e
+            
+            echo "📍 Entrando no diretório da aplicação..."
             cd ${{ secrets.APP_DIR }}
-            git fetch origin
+            
+            echo "🔄 Atualizando repositório (production)..."
+            git fetch origin production --force
             git reset --hard origin/production
+            
+            echo "📦 Reconstruindo e iniciando containers..."
+            docker compose pull
             docker compose up -d --build
+            
+            echo "🔍 Verificando saúde dos containers..."
+            sleep 5
+            docker ps -a
+            
+            echo "✅ Deploy concluído com sucesso!"
           EOF
+
+      - name: 📢 Notificação de Sucesso
+        if: success()
+        run: echo "✅ Deploy realizado com sucesso em $(date)"
+
+      - name: 📢 Notificação de Erro
+        if: failure()
+        run: echo "❌ Erro durante o deploy. Verifique os logs."

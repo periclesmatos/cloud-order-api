@@ -4,27 +4,74 @@ on:
   pull_request:
     branches:
       - production
+    types: [opened, synchronize, reopened]
 
 jobs:
-  ci:
-    name: CI (build + tests)
+  # ============================================
+  # TESTS: Validação de testes
+  # ============================================
+  tests:
+    name: 🧪 Tests & Coverage
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
 
     steps:
       - name: Checkout código
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node.js (v22)
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Cache de node_modules
+        uses: actions/cache@v4
+        id: cache
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
       - name: Instalar dependências
-        run: npm ci
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm ci --silent
 
-      - name: Build do back-end (Docker)
-        run: docker build -t cloud-order-api:ci .
+      - name: 🧪 Rodar Testes
+        run: npm run test:all -- --reporter=verbose
 
-      - name: Rodar testes
-        run: npm run test
+      - name: 📊 Cobertura de Testes
+        run: npm run test:all -- --coverage --reporter=verbose
+
+  # ============================================
+  # BUILD: Validação do Docker
+  # ============================================
+  docker-build:
+    name: 🐳 Docker Build & Security Scan
+    needs: tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🔨 Build da Imagem Docker
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: cloud-order-api:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
