@@ -171,7 +171,6 @@ describe('CustomerService (unit)', () => {
       city: 'Fortaleza',
       state: 'CE',
       postalCode: '60000-000',
-      country: 'BR',
       complement: 'Apto 1',
     });
 
@@ -192,7 +191,7 @@ describe('CustomerService (unit)', () => {
         city: 'Fortaleza',
         state: 'CE',
         postalCode: '60000-000',
-        country: 'BR',
+        complement: 'Apto 1',
       }),
     ).rejects.toThrow(ValidationError);
   });
@@ -208,7 +207,6 @@ describe('CustomerService (unit)', () => {
       city: 'Fortaleza',
       state: 'CE',
       postalCode: '60000-000',
-      country: 'BR',
       complement: 'Casa',
       createdAt: '2026-01-01T00:00:00.000Z',
     });

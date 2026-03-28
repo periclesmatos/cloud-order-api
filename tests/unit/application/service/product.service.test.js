@@ -32,6 +32,7 @@ describe('ProductService (unit)', () => {
       name: 'Teclado',
       price: 199.9,
       amount: 5,
+      description: 'Teclado mecanico RGB',
     });
 
     expect(repository.saveProduct).toHaveBeenCalledTimes(1);
@@ -61,6 +62,7 @@ describe('ProductService (unit)', () => {
       name: 'Mouse',
       price: 99.9,
       amount: 10,
+      description: 'Mouse com sensor optico',
     });
     repository.findById.mockResolvedValue(product);
     repository.update.mockImplementation(async (updated) => updated);
@@ -98,6 +100,7 @@ describe('ProductService (unit)', () => {
       name: 'Headset',
       price: 250,
       amount: 3,
+      description: 'Headset com cancelamento de ruido',
     });
     product.deactivate();
 
@@ -116,6 +119,7 @@ describe('ProductService (unit)', () => {
       name: 'Headset',
       price: 250,
       amount: 3,
+      description: 'Headset com cancelamento de ruido',
     });
 
     repository.findById.mockResolvedValue(product);
