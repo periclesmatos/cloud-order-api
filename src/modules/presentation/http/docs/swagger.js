@@ -224,7 +224,6 @@ export const swaggerSpec = {
           city: { type: 'string', example: 'Fortaleza' },
           state: { type: 'string', example: 'CE' },
           postalCode: { type: 'string', example: '60000-000' },
-          country: { type: 'string', example: 'BR' },
           complement: { type: 'string', nullable: true, example: 'Apto 101' },
         },
       },

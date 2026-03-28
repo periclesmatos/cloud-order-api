@@ -79,7 +79,6 @@ describe('CustomerMapper (unit)', () => {
       city: 'Fortaleza',
       state: 'CE',
       postalCode: '60000-000',
-      country: 'BR',
       complement: 'Apto 1',
     });
 
@@ -103,7 +102,6 @@ describe('CustomerMapper (unit)', () => {
       city: 'Fortaleza',
       state: 'CE',
       postalCode: '60100-000',
-      country: 'BR',
       complement: 'Casa',
       createdAt: '2026-02-28T00:00:00.000Z',
     };
@@ -134,7 +132,6 @@ describe('CustomerMapper (unit)', () => {
       city: 'Fortaleza',
       state: 'CE',
       postalCode: '60000-000',
-      country: 'BR',
       createdAt: '2026-02-28T00:00:00.000Z',
     };
 

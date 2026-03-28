@@ -44,7 +44,6 @@ describe('OrderService (unit)', () => {
       city: 'Fortaleza',
       state: 'CE',
       postalCode: '60000-000',
-      country: 'BR',
       complement: null,
       
     });
@@ -109,7 +108,6 @@ describe('OrderService (unit)', () => {
       city: 'Fortaleza',
       state: 'CE',
       postalCode: '60000-000',
-      country: 'BR',
       complement: null,
     });
     const product = Product.create({
@@ -140,7 +138,6 @@ describe('OrderService (unit)', () => {
       city: 'Fortaleza',
       state: 'CE',
       postalCode: '60000-000',
-      country: 'BR',
       complement: null,
     });
     const product = Product.create({
@@ -185,7 +182,6 @@ describe('OrderService (unit)', () => {
         city: 'Fortaleza',
         state: 'CE',
         postalCode: '60000-000',
-        country: 'BR',
         complement: null,
       },
       items: [{ productId: 'prod-1', productName: 'Mouse', quantity: 1, unitPrice: 100 }],
@@ -210,7 +206,7 @@ describe('OrderService (unit)', () => {
         city: 'Fortaleza',
         state: 'CE',
         postalCode: '60000-000',
-        country: 'BR',
+        
         complement: null,
       },
       items: [{ productId: 'prod-1', productName: 'Mouse', quantity: 2, unitPrice: 100 }],
@@ -244,7 +240,7 @@ describe('OrderService (unit)', () => {
         city: 'Fortaleza',
         state: 'CE',
         postalCode: '60000-000',
-        country: 'BR',
+        
         complement: null,
       },
       items: [{ productId: 'prod-1', productName: 'Mouse', quantity: 1, unitPrice: 100 }],
