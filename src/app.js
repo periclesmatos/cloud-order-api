@@ -18,10 +18,17 @@ const startupBanner = `
 `;
 
 const port = process.env.PORT || 3000;
+const env = process.env.NODE_ENV || 'development';
+
 app.listen(port, () => {
   logger.info('App', `\n${chalk.green(startupBanner)}`);
-  logger.info('App', `${chalk.green("🚀 Server started")}`);
-  logger.info('App', `API rodando em http://localhost:${port}`);
+  logger.info('App', chalk.green('━'.repeat(60)));
+  logger.info('App', `${chalk.green('✓')} Servidor iniciado com sucesso`);
+  logger.info('App', `${chalk.cyan('  • Porta:')} ${chalk.yellow(port)}`);
+  logger.info('App', `${chalk.cyan('  • Ambiente:')} ${chalk.yellow(env)}`);
+  logger.info('App', `${chalk.cyan('  • URL:')} ${chalk.blue(`http://localhost:${port}`)}`);
+  logger.info('App', `${chalk.cyan('  • Docs:')} ${chalk.blue(`http://localhost:${port}/docs`)}`);
+  logger.info('App', chalk.green('━'.repeat(60)));
 });
 
 export default app;
