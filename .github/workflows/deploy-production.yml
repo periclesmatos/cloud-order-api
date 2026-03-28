@@ -16,10 +16,6 @@ jobs:
       contents: read
       deployments: write
 
-    environment:
-      name: production
-      url: https://${{ secrets.EC2_HOST }}
-
     steps:
       - name: Checkout código
         uses: actions/checkout@v4
