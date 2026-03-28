@@ -33,7 +33,7 @@ jobs:
 
       - name: 🚀 Deploy na EC2 (Git + Docker Compose)
         run: |
-          ssh -i ~/.ssh/id_ed25519 ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+          ssh -i ~/.ssh/id_ed25519 ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
             set -e
             
             echo "📍 Entrando no diretório da aplicação..."
